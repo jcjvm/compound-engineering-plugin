@@ -88,7 +88,7 @@ All provider targets are experimental and may change as the formats evolve.
 
 ## Sync Personal Config
 
-Sync your personal Claude Code config (`~/.claude/`) to other AI coding tools. Omit `--target` to sync to all detected tools automatically:
+Sync your personal Claude Code config (`~/.claude/`) to other AI coding tools. Omit `--target` to sync to all detected supported tools automatically:
 
 ```bash
 # Sync to all detected tools (default)
@@ -103,7 +103,7 @@ bunx @every-env/compound-plugin sync --target codex
 # Sync to Pi
 bunx @every-env/compound-plugin sync --target pi
 
-# Sync to Droid (skills only)
+# Sync to Droid
 bunx @every-env/compound-plugin sync --target droid
 
 # Sync to GitHub Copilot (skills + MCP servers)
@@ -112,15 +112,48 @@ bunx @every-env/compound-plugin sync --target copilot
 # Sync to Gemini (skills + MCP servers)
 bunx @every-env/compound-plugin sync --target gemini
 
+# Sync to Windsurf
+bunx @every-env/compound-plugin sync --target windsurf
+
+# Sync to Kiro
+bunx @every-env/compound-plugin sync --target kiro
+
+# Sync to Qwen
+bunx @every-env/compound-plugin sync --target qwen
+
+# Sync to OpenClaw (skills only; MCP is validation-gated)
+bunx @every-env/compound-plugin sync --target openclaw
+
 # Sync to all detected tools
 bunx @every-env/compound-plugin sync --target all
 ```
 
 This syncs:
 - Personal skills from `~/.claude/skills/` (as symlinks)
+- Personal slash commands from `~/.claude/commands/` (as provider-native prompts, workflows, or converted skills where supported)
 - MCP servers from `~/.claude/settings.json`
 
 Skills are symlinked (not copied) so changes in Claude Code are reflected immediately.
+
+Supported sync targets:
+- `opencode`
+- `codex`
+- `pi`
+- `droid`
+- `copilot`
+- `gemini`
+- `windsurf`
+- `kiro`
+- `qwen`
+- `openclaw`
+
+Notes:
+- Codex sync preserves non-managed `config.toml` content and now includes remote MCP servers.
+- Command sync reuses each provider's existing Claude command conversion, so some targets receive prompts or workflows while others receive converted skills.
+- Copilot sync writes personal skills to `~/.copilot/skills/` and MCP config to `~/.copilot/mcp-config.json`.
+- Gemini sync writes MCP config to `~/.gemini/` and avoids mirroring skills that Gemini already discovers from `~/.agents/skills`, which prevents duplicate-skill warnings.
+- Droid, Windsurf, Kiro, and Qwen sync merge MCP servers into the provider's documented user config.
+- OpenClaw currently syncs skills only. Personal command sync is skipped because this repo does not yet have a documented user-level OpenClaw command surface, and MCP sync is skipped because the current official OpenClaw docs do not clearly document an MCP server config contract.
 
 ## Workflow
 

@@ -41,6 +41,12 @@ export async function writeText(filePath: string, content: string): Promise<void
   await fs.writeFile(filePath, content, "utf8")
 }
 
+export async function writeTextSecure(filePath: string, content: string): Promise<void> {
+  await ensureDir(path.dirname(filePath))
+  await fs.writeFile(filePath, content, { encoding: "utf8", mode: 0o600 })
+  await fs.chmod(filePath, 0o600)
+}
+
 export async function writeJson(filePath: string, data: unknown): Promise<void> {
   const content = JSON.stringify(data, null, 2)
   await writeText(filePath, content + "\n")
@@ -51,6 +57,7 @@ export async function writeJsonSecure(filePath: string, data: unknown): Promise<
   const content = JSON.stringify(data, null, 2)
   await ensureDir(path.dirname(filePath))
   await fs.writeFile(filePath, content + "\n", { encoding: "utf8", mode: 0o600 })
+  await fs.chmod(filePath, 0o600)
 }
 
 export async function walkFiles(root: string): Promise<string[]> {

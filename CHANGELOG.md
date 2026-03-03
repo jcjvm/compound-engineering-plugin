@@ -5,6 +5,24 @@ All notable changes to the `@every-env/compound-plugin` CLI tool will be documen
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-03-03
+
+### Added
+
+- **Sync parity across supported providers** — `sync` now uses a shared target registry and supports MCP sync for Codex, Droid, Gemini, Copilot, Pi, Windsurf, Kiro, and Qwen, with OpenClaw kept validation-gated for skills-only sync.
+- **Personal command sync** — Personal Claude commands from `~/.claude/commands/` now sync into provider-native command surfaces, including Codex prompts and generated skills, Gemini TOML commands, OpenCode command markdown, Windsurf workflows, and converted skills where that is the closest available equivalent.
+
+### Changed
+
+- **Global user config targets** — Copilot sync now writes to `~/.copilot/` and Gemini sync writes to `~/.gemini/`, matching current documented user-level config locations.
+- **Gemini skill deduplication** — Gemini sync now avoids mirroring skills that Gemini already resolves from `~/.agents/skills`, preventing duplicate skill conflict warnings after sync.
+
+### Fixed
+
+- **Safe skill sync replacement** — When a real directory already exists at a symlink target (for example `~/.config/opencode/skills/proof`), sync now logs a warning and skips instead of throwing an error.
+
+---
+
 ## [0.12.0] - 2026-03-01
 
 ### Added

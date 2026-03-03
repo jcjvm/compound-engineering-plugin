@@ -77,6 +77,33 @@ describe("syncToGemini", () => {
     expect(merged.mcpServers.context7?.url).toBe("https://mcp.context7.com/mcp")
   })
 
+  test("writes personal commands as Gemini TOML prompts", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "sync-gemini-cmd-"))
+
+    const config: ClaudeHomeConfig = {
+      skills: [],
+      commands: [
+        {
+          name: "workflows:plan",
+          description: "Planning command",
+          argumentHint: "[goal]",
+          body: "Plan the work carefully.",
+          sourcePath: "/tmp/workflows/plan.md",
+        },
+      ],
+      mcpServers: {},
+    }
+
+    await syncToGemini(config, tempRoot)
+
+    const content = await fs.readFile(
+      path.join(tempRoot, "commands", "workflows", "plan.toml"),
+      "utf8",
+    )
+    expect(content).toContain("Planning command")
+    expect(content).toContain("User request: {{args}}")
+  })
+
   test("does not write settings.json when no MCP servers", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "sync-gemini-nomcp-"))
     const fixtureSkillDir = path.join(import.meta.dir, "fixtures", "sample-plugin", "skills", "skill-one")
@@ -102,5 +129,32 @@ describe("syncToGemini", () => {
     // But settings.json should not exist
     const settingsExists = await fs.access(path.join(tempRoot, "settings.json")).then(() => true).catch(() => false)
     expect(settingsExists).toBe(false)
+  })
+
+  test("skips mirrored ~/.agents skills when syncing to ~/.gemini and removes stale duplicate symlinks", async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "sync-gemini-home-"))
+    const geminiRoot = path.join(tempHome, ".gemini")
+    const agentsSkillDir = path.join(tempHome, ".agents", "skills", "skill-one")
+
+    await fs.mkdir(path.join(agentsSkillDir), { recursive: true })
+    await fs.writeFile(path.join(agentsSkillDir, "SKILL.md"), "# Skill One\n", "utf8")
+    await fs.mkdir(path.join(geminiRoot, "skills"), { recursive: true })
+    await fs.symlink(agentsSkillDir, path.join(geminiRoot, "skills", "skill-one"))
+
+    const config: ClaudeHomeConfig = {
+      skills: [
+        {
+          name: "skill-one",
+          sourceDir: agentsSkillDir,
+          skillPath: path.join(agentsSkillDir, "SKILL.md"),
+        },
+      ],
+      mcpServers: {},
+    }
+
+    await syncToGemini(config, geminiRoot)
+
+    const duplicateExists = await fs.access(path.join(geminiRoot, "skills", "skill-one")).then(() => true).catch(() => false)
+    expect(duplicateExists).toBe(false)
   })
 })

@@ -2,7 +2,9 @@ import fs from "fs/promises"
 import path from "path"
 import type { ClaudeHomeConfig } from "../parsers/claude-home"
 import type { ClaudeMcpServer } from "../types/claude"
-import { forceSymlink, isValidSkillName } from "../utils/symlink"
+import { syncGeminiCommands } from "./commands"
+import { mergeJsonConfigAtKey } from "./json-config"
+import { syncSkills } from "./skills"
 
 type GeminiMcpServer = {
   command?: string
@@ -16,43 +18,100 @@ export async function syncToGemini(
   config: ClaudeHomeConfig,
   outputRoot: string,
 ): Promise<void> {
-  const skillsDir = path.join(outputRoot, "skills")
-  await fs.mkdir(skillsDir, { recursive: true })
-
-  for (const skill of config.skills) {
-    if (!isValidSkillName(skill.name)) {
-      console.warn(`Skipping skill with invalid name: ${skill.name}`)
-      continue
-    }
-    const target = path.join(skillsDir, skill.name)
-    await forceSymlink(skill.sourceDir, target)
-  }
+  await syncGeminiSkills(config.skills, outputRoot)
+  await syncGeminiCommands(config, outputRoot)
 
   if (Object.keys(config.mcpServers).length > 0) {
     const settingsPath = path.join(outputRoot, "settings.json")
-    const existing = await readJsonSafe(settingsPath)
     const converted = convertMcpForGemini(config.mcpServers)
-    const existingMcp =
-      existing.mcpServers && typeof existing.mcpServers === "object"
-        ? (existing.mcpServers as Record<string, unknown>)
-        : {}
-    const merged = {
-      ...existing,
-      mcpServers: { ...existingMcp, ...converted },
-    }
-    await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2), { mode: 0o600 })
+    await mergeJsonConfigAtKey({
+      configPath: settingsPath,
+      key: "mcpServers",
+      incoming: converted,
+    })
   }
 }
 
-async function readJsonSafe(filePath: string): Promise<Record<string, unknown>> {
-  try {
-    const content = await fs.readFile(filePath, "utf-8")
-    return JSON.parse(content) as Record<string, unknown>
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-      return {}
+async function syncGeminiSkills(
+  skills: ClaudeHomeConfig["skills"],
+  outputRoot: string,
+): Promise<void> {
+  const skillsDir = path.join(outputRoot, "skills")
+  const sharedSkillsDir = getGeminiSharedSkillsDir(outputRoot)
+
+  if (!sharedSkillsDir) {
+    await syncSkills(skills, skillsDir)
+    return
+  }
+
+  const canonicalSharedSkillsDir = await canonicalizePath(sharedSkillsDir)
+  const mirroredSkills: ClaudeHomeConfig["skills"] = []
+  const directSkills: ClaudeHomeConfig["skills"] = []
+
+  for (const skill of skills) {
+    if (await isWithinDir(skill.sourceDir, canonicalSharedSkillsDir)) {
+      mirroredSkills.push(skill)
+    } else {
+      directSkills.push(skill)
     }
-    throw err
+  }
+
+  await removeGeminiMirrorConflicts(mirroredSkills, skillsDir, canonicalSharedSkillsDir)
+  await syncSkills(directSkills, skillsDir)
+}
+
+function getGeminiSharedSkillsDir(outputRoot: string): string | null {
+  if (path.basename(outputRoot) !== ".gemini") return null
+  return path.join(path.dirname(outputRoot), ".agents", "skills")
+}
+
+async function canonicalizePath(targetPath: string): Promise<string> {
+  try {
+    return await fs.realpath(targetPath)
+  } catch {
+    return path.resolve(targetPath)
+  }
+}
+
+async function isWithinDir(candidate: string, canonicalParentDir: string): Promise<boolean> {
+  const resolvedCandidate = await canonicalizePath(candidate)
+  return resolvedCandidate === canonicalParentDir
+    || resolvedCandidate.startsWith(`${canonicalParentDir}${path.sep}`)
+}
+
+async function removeGeminiMirrorConflicts(
+  skills: ClaudeHomeConfig["skills"],
+  skillsDir: string,
+  sharedSkillsDir: string,
+): Promise<void> {
+  for (const skill of skills) {
+    const duplicatePath = path.join(skillsDir, skill.name)
+
+    let stat
+    try {
+      stat = await fs.lstat(duplicatePath)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+        continue
+      }
+      throw error
+    }
+
+    if (!stat.isSymbolicLink()) {
+      continue
+    }
+
+    let resolvedTarget: string
+    try {
+      resolvedTarget = await canonicalizePath(duplicatePath)
+    } catch {
+      continue
+    }
+
+    if (resolvedTarget === await canonicalizePath(skill.sourceDir)
+      || await isWithinDir(resolvedTarget, sharedSkillsDir)) {
+      await fs.unlink(duplicatePath)
+    }
   }
 }
 

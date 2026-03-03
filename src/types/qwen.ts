@@ -14,6 +14,9 @@ export type QwenMcpServer = {
   args?: string[]
   env?: Record<string, string>
   cwd?: string
+  httpUrl?: string
+  url?: string
+  headers?: Record<string, string>
 }
 
 export type QwenSetting = {

@@ -19,6 +19,7 @@ export type WindsurfMcpServerEntry = {
   args?: string[]
   env?: Record<string, string>
   serverUrl?: string
+  url?: string
   headers?: Record<string, string>
 }
 
