@@ -131,6 +131,14 @@ See `docs/solutions/skill-design/beta-skills-framework.md` for the full pattern.
 - Beta plan output files use `-beta-plan.md` suffix to avoid clobbering stable plan files
 - Beta skills are not wired into `lfg`/`slfg` orchestration — invoke them directly
 
+### Beta Skill Validation
+
+After creating or modifying a beta skill, search its SKILL.md for any reference to the stable skill name it replaces. Occurrences of the stable name without `-beta` are missed renames that would cause output collisions or misrouting. Check for:
+
+- Output file paths using the stable naming convention instead of the `-beta` variant
+- Cross-skill references pointing to stable names instead of beta counterparts
+- User-facing text (questions, confirmations) mentioning stable paths or names
+
 ### Promoting Beta to Stable
 
 When replacing a stable skill with its beta version:

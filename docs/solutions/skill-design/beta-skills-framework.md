@@ -12,7 +12,6 @@ tags:
 severity: medium
 description: "Pattern for trialing new skill versions alongside stable ones using a -beta suffix. Covers naming, plan file naming, internal references, and promotion path."
 related:
-  - docs/brainstorms/2026-03-17-beta-skills-framework-brainstorm.md
   - docs/solutions/skill-design/compound-refresh-skill-improvements.md
 ---
 
@@ -80,8 +79,18 @@ When the beta version is validated:
 8. Verify `lfg`/`slfg` work with the promoted skill
 9. Verify `ce:work` consumes plans from the promoted skill
 
+## Validation
+
+After creating a beta skill, search its SKILL.md for references to the stable skill name it replaces. Any occurrence of the stable name without `-beta` is a missed rename — it would cause output collisions or route to the wrong skill.
+
+Check for:
+- **Output file paths** that use the stable naming convention instead of the `-beta` variant
+- **Cross-skill references** that point to stable skill names instead of beta counterparts
+- **User-facing text** (questions, confirmations) that mentions stable paths or names
+
 ## Prevention
 
 - When adding a beta skill, always use the `-beta` suffix consistently in directory name, frontmatter name, description, plan file naming, and all internal skill-to-skill references
+- After creating a beta skill, run the validation checks above to catch missed renames in file paths, user-facing text, and cross-skill references
 - Always test that stable skills are completely unaffected by the beta skill's existence
 - Keep beta and stable plan file suffixes distinct so outputs can coexist for comparison
