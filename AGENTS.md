@@ -18,6 +18,47 @@ It also contains:
 - **Output Paths:** Keep OpenCode output at `opencode.json` and `.opencode/{agents,skills,plugins}`. For OpenCode, command go to `~/.config/opencode/commands/<name>.md`; `opencode.json` is deep-merged (never overwritten wholesale).
 - **ASCII-first:** Use ASCII unless the file already contains Unicode.
 
+## Repo Surfaces
+
+Changes in this repo may affect one or more of these surfaces:
+
+- `compound-engineering` under `plugins/compound-engineering/`
+- the Claude marketplace catalog under `.claude-plugin/`
+- the converter/install CLI in `src/` and `package.json`
+- secondary plugins such as `plugins/coding-tutor/`
+
+Do not assume a repo change is "just CLI" or "just plugin" without checking which surface owns the affected files.
+
+## Plugin Maintenance
+
+When changing `plugins/compound-engineering/` content:
+
+- Update substantive docs like `plugins/compound-engineering/README.md` when the plugin behavior, inventory, or usage changes.
+- Do not hand-bump release-owned versions in plugin or marketplace manifests.
+- Do not hand-add canonical release entries to the root `CHANGELOG.md`.
+- Run `bun run release:validate` if agents, commands, skills, MCP servers, or release-owned descriptions/counts may have changed.
+
+Useful validation commands:
+
+```bash
+bun run release:validate
+cat .claude-plugin/marketplace.json | jq .
+cat plugins/compound-engineering/.claude-plugin/plugin.json | jq .
+```
+
+## Coding Conventions
+
+- Prefer explicit mappings over implicit magic when converting between platforms.
+- Keep target-specific behavior in dedicated converters/writers instead of scattering conditionals across unrelated files.
+- Preserve stable output paths and merge semantics for installed targets; do not casually change generated file locations.
+- When adding or changing a target, update fixtures/tests alongside implementation rather than treating docs or examples as sufficient proof.
+
+## Commit Conventions
+
+- Use conventional titles such as `feat: ...`, `fix: ...`, `docs: ...`, and `refactor: ...`.
+- Component scope is optional. Example: `feat(coding-tutor): add quiz reset`.
+- Breaking changes must be explicit with `!` or a breaking-change footer so release automation can classify them correctly.
+
 ## Adding a New Target Provider (e.g., Codex)
 
 Use this checklist when introducing a new target provider:
