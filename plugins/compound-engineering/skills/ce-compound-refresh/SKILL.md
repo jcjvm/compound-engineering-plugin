@@ -177,7 +177,7 @@ The critical distinction is whether the drift is **cosmetic** (references moved 
 **Memory-sourced drift signals** are supplementary, not primary. A memory note describing a different approach does not alone justify Replace or Archive. Use memory signals to:
 - Corroborate codebase-sourced drift (strengthens the case for Replace)
 - Prompt deeper investigation when codebase evidence is borderline
-- Add context to the evidence report ("(auto memory) notes suggest approach X may have changed since this learning was written")
+- Add context to the evidence report ("(auto memory (claude)) notes suggest approach X may have changed since this learning was written")
 
 In autonomous mode, memory-only drift (no codebase corroboration) should result in stale-marking, not action.
 
@@ -212,7 +212,7 @@ Use subagents for context isolation when investigating multiple artifacts — no
 
 > Use dedicated file search and read tools (Glob, Grep, Read) for all investigation. Do NOT use shell commands (ls, find, cat, grep, test, bash) for file operations. This avoids permission prompts and is more reliable.
 >
-> Also read MEMORY.md from the auto memory directory if it exists. Check for notes related to the learning's problem domain. Report any memory-sourced drift signals separately from codebase-sourced evidence, tagged with "(auto memory)" in the evidence section. If MEMORY.md does not exist or is empty, skip this check.
+> Also read MEMORY.md from the auto memory directory if it exists. Check for notes related to the learning's problem domain. Report any memory-sourced drift signals separately from codebase-sourced evidence, tagged with "(auto memory (claude))" in the evidence section. If MEMORY.md does not exist or is empty, skip this check.
 
 There are two subagent roles:
 
@@ -455,7 +455,7 @@ Marked stale: S
 Then for EVERY file processed, list:
 - The file path
 - The classification (Keep/Update/Replace/Archive/Stale)
-- What evidence was found -- tag any memory-sourced findings with "(auto memory)" to distinguish them from codebase-sourced evidence
+- What evidence was found -- tag any memory-sourced findings with "(auto memory (claude))" to distinguish them from codebase-sourced evidence
 - What action was taken (or recommended)
 
 For **Keep** outcomes, list them under a reviewed-without-edits section so the result is visible without creating git churn.

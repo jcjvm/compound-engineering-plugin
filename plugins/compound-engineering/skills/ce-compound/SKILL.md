@@ -54,7 +54,7 @@ and codebase findings take priority over these notes.
 [relevant entries here]
 ```
 
-5. Pass this block as additional context to the Context Analyzer and Solution Extractor task prompts in Phase 1. If any memory notes end up in the final documentation (e.g., as part of the investigation steps or root cause analysis), tag them with "(auto memory)" so their origin is clear to future readers.
+5. Pass this block as additional context to the Context Analyzer and Solution Extractor task prompts in Phase 1. If any memory notes end up in the final documentation (e.g., as part of the investigation steps or root cause analysis), tag them with "(auto memory (claude))" so their origin is clear to future readers.
 
 If no relevant entries are found, proceed to Phase 1 without passing memory context.
 
@@ -190,7 +190,7 @@ When context budget is tight, this mode skips parallel subagents entirely. The o
 
 The orchestrator (main conversation) performs ALL of the following in one sequential pass:
 
-1. **Extract from conversation**: Identify the problem, root cause, and solution from conversation history. Also read MEMORY.md from the auto memory directory if it exists -- use any relevant notes as supplementary context alongside conversation history. Tag any memory-sourced content incorporated into the final doc with "(auto memory)"
+1. **Extract from conversation**: Identify the problem, root cause, and solution from conversation history. Also read MEMORY.md from the auto memory directory if it exists -- use any relevant notes as supplementary context alongside conversation history. Tag any memory-sourced content incorporated into the final doc with "(auto memory (claude))"
 2. **Classify**: Determine category and filename (same categories as full mode)
 3. **Write minimal doc**: Create `docs/solutions/[category]/[filename].md` with:
    - YAML frontmatter (title, category, date, tags)
