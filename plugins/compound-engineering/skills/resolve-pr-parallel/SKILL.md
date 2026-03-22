@@ -52,7 +52,7 @@ If there are 3 comments, spawn 3 agents — one per comment. Prefer running all 
 Keep parent-context pressure bounded:
 - If there are 1-4 unresolved items, direct parallel returns are fine
 - If there are 5+ unresolved items, launch in batches of at most 4 agents at a time
-- Require each resolver agent to return only a short status summary to the parent: comment/thread handled, files changed, tests run or skipped, and any blocker that still needs human attention
+- Require each resolver agent to return a short status summary to the parent: comment/thread handled, files changed, tests run or skipped, any blocker that still needs human attention, and for question-only threads the substantive reply text so the parent can post or verify it
 
 If the PR is large enough that even batched short returns are likely to get noisy, use a per-run scratch directory such as `.context/compound-engineering/resolve-pr-parallel/<run-id>/`:
 - Have each resolver write a compact artifact for its thread there

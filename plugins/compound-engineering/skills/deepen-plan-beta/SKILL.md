@@ -337,7 +337,8 @@ If agent outputs conflict:
 Strengthen only the selected sections. Keep the plan coherent and preserve its overall structure.
 
 If artifact-backed mode was used:
-- read only the plan, origin document if present, and the selected section artifacts
+- read the plan, origin document if present, and the selected section artifacts
+- also incorporate any findings already returned inline from direct-mode agents before a mid-run switch, so early results are not silently dropped
 - synthesize in one pass
 - do not create a separate judge, merge, or quality-review phase unless the user explicitly asks for another pass
 
