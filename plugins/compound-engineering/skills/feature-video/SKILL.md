@@ -314,10 +314,18 @@ gh pr edit [number] --body "[updated body with demo section]"
 
 ### 8. Cleanup
 
-Ask the user before removing temporary files. If confirmed, clean up only the current run's scratch directory (other runs may still be in progress or awaiting upload):
+Ask the user before removing temporary files. If confirmed, clean up only the current run's scratch directory (other runs may still be in progress or awaiting upload).
+
+**If the video was successfully uploaded**, remove the entire run directory:
 
 ```bash
 rm -r .context/compound-engineering/feature-video/[RUN_ID]
+```
+
+**If in record-only mode or upload failed**, remove only the screenshots but preserve the video so the user can upload later:
+
+```bash
+rm -r .context/compound-engineering/feature-video/[RUN_ID]/screenshots
 ```
 
 Present a completion summary:
