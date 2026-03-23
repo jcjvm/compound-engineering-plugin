@@ -1,7 +1,7 @@
 ---
 name: feature-video
 description: Record a video walkthrough of a feature and add it to the PR description. Use when a PR needs a visual demo for reviewers, when the user asks to demo a feature, create a PR video, record a walkthrough, show what changed visually, or add a video to a pull request.
-argument-hint: "[PR number or 'current'] [optional: base URL, default localhost:3000]"
+argument-hint: "[PR number or 'current' or path/to/video.mp4] [optional: base URL, default localhost:3000]"
 ---
 
 # Feature Video Walkthrough
@@ -24,8 +24,10 @@ Record browser interactions demonstrating a feature, stitch screenshots into an 
 **Arguments:** $ARGUMENTS
 
 Parse the input:
-- First argument: PR number or "current" (defaults to current branch's PR)
+- First argument: PR number, "current" (defaults to current branch's PR), or path to an existing `.mp4` file (upload-only resume mode)
 - Second argument: Base URL (defaults to `http://localhost:3000`)
+
+**Upload-only resume:** If the first argument ends in `.mp4` and the file exists, skip Steps 2-5 and proceed directly to Step 6 using that file. Resolve the PR number from the current branch (`gh pr view --json number -q '.number'`).
 
 If an explicit PR number was provided, verify it exists and use it directly:
 
@@ -55,7 +57,9 @@ If option 1: create a draft PR with a placeholder title derived from the branch 
 gh pr create --draft --title "[branch-name-humanized]" --body "Draft PR for video walkthrough"
 ```
 
-If option 2: set `RECORD_ONLY=true`. Proceed through Steps 2-5 (record and encode), skip Steps 6-7 (upload and PR update), and report the local video path at the end. The user can re-run the skill after creating a PR to upload.
+If option 2: set `RECORD_ONLY=true`. Proceed through Steps 2-5 (record and encode), skip Steps 6-7 (upload and PR update), and report the local video path and `[RUN_ID]` at the end.
+
+**Upload-only resume:** To upload a previously recorded video, pass an existing video file path as the first argument (e.g., `/feature-video .context/compound-engineering/feature-video/1711234567/videos/feature-demo.mp4`). When the first argument is a path to an `.mp4` file, skip Steps 2-5 and proceed directly to Step 6 using that file for upload.
 
 ### 1b. Verify Required Tools
 
@@ -92,17 +96,10 @@ gh pr view [number] --json title,body,files,headRefName -q '.'
 gh pr view [number] --json files -q '.files[].path'
 ```
 
-**If in record-only mode (no PR)**, detect the default branch and derive context from the branch diff:
+**If in record-only mode (no PR)**, detect the default branch and derive context from the branch diff. Run both commands in a single block so the variable persists:
 
 ```bash
-DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name')
-git diff --name-only "$DEFAULT_BRANCH"...HEAD
-```
-
-Use the branch name and commit messages to infer the feature title:
-
-```bash
-git log --oneline "$DEFAULT_BRANCH"...HEAD
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef -q '.defaultBranchRef.name') && git diff --name-only "$DEFAULT_BRANCH"...HEAD && git log --oneline "$DEFAULT_BRANCH"...HEAD
 ```
 
 Map changed files to routes/pages that should be demonstrated. Examine the project's routing configuration (e.g., `routes.rb`, `next.config.js`, `app/` directory structure) to determine which URLs correspond to the changed files.
@@ -226,7 +223,7 @@ agent-browser close
 agent-browser --engine chrome --headed --session-name github open https://github.com/login
 ```
 
-The user must log in manually in the browser window (handles 2FA, SSO, OAuth -- any login method). **Use the platform's blocking question tool** (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini) to prompt:
+The user must log in manually in the browser window (handles 2FA, SSO, OAuth -- any login method). **Use the platform's blocking question tool** (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). Otherwise, present the message and wait for the user's reply before proceeding:
 
 ```
 GitHub login required for video upload.
