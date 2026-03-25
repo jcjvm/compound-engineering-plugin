@@ -56,14 +56,15 @@ gh api repos/{owner}/{repo}/pulls/PR_NUMBER/comments
 
 ### 2. Triage: Separate New from Pending
 
-Before processing, classify each unresolved thread by reading its comments:
+Before processing, classify each piece of feedback as **new** or **already handled**.
 
-- **New feedback**: The thread has only the original reviewer comment(s) with no substantive response. Process normally (steps 3-7).
-- **Pending decision**: The thread already has a reply that acknowledges the concern but defers action (e.g., "need to align on this", "going to think through this", or a reply that presents options without resolving). This could have been posted by anyone -- a previous skill run, a teammate, or manually. Don't re-process. Surface directly in the step 8 summary.
+**Review threads**: Read the thread's comments. If there's a substantive reply that acknowledges the concern but defers action (e.g., "need to align on this", "going to think through this", or a reply that presents options without resolving), it's a **pending decision** -- don't re-process. If there's only the original reviewer comment(s) with no substantive response, it's **new**.
 
-The distinction is about thread content, not who posted what. If there's a substantive response that defers rather than resolves, it's pending.
+**PR comments and review bodies**: These have no resolve mechanism, so they reappear on every run. Check the PR conversation for an existing reply that quotes and addresses the feedback. If a reply already exists, skip. If not, it's new.
 
-If there are no new items across all feedback types (only pending decisions from review threads, and no new `pr_comments` or `review_bodies`), skip steps 3-7 and go straight to step 8.
+The distinction is about content, not who posted what. A deferral from a teammate, a previous skill run, or a manual reply all count.
+
+If there are no new items across all feedback types, skip steps 3-7 and go straight to step 8.
 
 ### 3. Plan
 
@@ -113,7 +114,9 @@ Platforms that do not support parallel dispatch should run agents sequentially.
 
 ### 5. Commit and Push
 
-After all agents complete:
+After all agents complete, check whether any files were actually changed. If all verdicts are `replied`, `not-addressing`, or `needs-human` (no code changes), skip this step entirely and proceed to step 6.
+
+If there are file changes:
 
 1. Stage only files reported by sub-agents and commit with a message referencing the PR:
 
