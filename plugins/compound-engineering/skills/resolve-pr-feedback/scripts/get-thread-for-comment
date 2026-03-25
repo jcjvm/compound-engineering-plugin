@@ -51,7 +51,8 @@ query($owner: String!, $repo: String!, $pr: Int!) {
       }
     }
   }
-}' | jq --arg cid "$COMMENT_NODE_ID" '
-  .data.repository.pullRequest.reviewThreads.nodes[]
-  | select(.comments.nodes | map(.id) | index($cid))
+}' | jq -e --arg cid "$COMMENT_NODE_ID" '
+  [.data.repository.pullRequest.reviewThreads.nodes[]
+  | select(.comments.nodes | map(.id) | index($cid))]
+  | if length == 0 then error("No thread found for comment \($cid)") else .[0] end
 '
