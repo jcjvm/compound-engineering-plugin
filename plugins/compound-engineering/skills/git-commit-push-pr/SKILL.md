@@ -99,7 +99,15 @@ If none resolve, ask the user to specify the target branch. Use the platform's b
 
 Once the base branch and remote are known:
 
-1. Find the merge base:
+1. Verify the remote-tracking ref exists locally and fetch if needed:
+   ```bash
+   command git rev-parse --verify <base-remote>/<base-branch>
+   ```
+   If this fails (ref missing or stale), fetch it:
+   ```bash
+   command git fetch --no-tags <base-remote> <base-branch>
+   ```
+2. Find the merge base:
    ```bash
    command git merge-base <base-remote>/<base-branch> HEAD
    ```
