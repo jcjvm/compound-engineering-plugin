@@ -10,7 +10,7 @@
 // Output: JSON to stdout
 
 import { readdir, readFile, access } from "node:fs/promises";
-import { join, basename } from "node:path";
+import { join, basename, resolve } from "node:path";
 
 const args = process.argv.slice(2);
 
@@ -48,9 +48,10 @@ async function readText(p) {
   try { return await readFile(p, "utf-8"); } catch { return null; }
 }
 
-async function listDir(dir) {
+async function listDir(dir, { includeDotfiles = false } = {}) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
+    if (includeDotfiles) return entries;
     return entries.filter(e => !e.name.startsWith(".") || e.name === ".github");
   } catch { return []; }
 }
@@ -62,8 +63,8 @@ async function listDirNames(dir) {
     .map(e => e.name + "/");
 }
 
-async function listFileNames(dir) {
-  const entries = await listDir(dir);
+async function listFileNames(dir, opts) {
+  const entries = await listDir(dir, opts);
   return entries.filter(e => e.isFile()).map(e => e.name);
 }
 
@@ -106,7 +107,7 @@ async function detectName() {
     }
   }
 
-  return basename(root);
+  return basename(resolve(root));
 }
 
 // ── Language & Framework Detection ────────────────────────────────────────────
@@ -642,7 +643,7 @@ async function findTestInfra() {
     "phpunit.xml", "karma.conf.js", "cypress.config.js", "cypress.config.ts",
     "playwright.config.js", "playwright.config.ts",
   ];
-  const rootFiles = await listFileNames(root);
+  const rootFiles = await listFileNames(root, { includeDotfiles: true });
   for (const f of testConfigs) {
     if (rootFiles.includes(f)) config.push(f);
   }
@@ -700,7 +701,7 @@ async function detectMonorepo() {
 // ── Infrastructure & External Dependencies ────────────────────────────────────
 
 async function findInfrastructure() {
-  const rootFiles = await listFileNames(root);
+  const rootFiles = await listFileNames(root, { includeDotfiles: true });
   const envFiles = [];
   const configFiles = [];
   const services = [];

@@ -34,7 +34,7 @@ If a focus hint is provided, use it to prioritize which parts of the codebase to
 Run the bundled inventory script to get a structural map of the repository without reading every file:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/skills/onboarding/scripts/inventory.mjs" --root .
+node scripts/inventory.mjs --root .
 ```
 
 Parse the JSON output. This provides:
