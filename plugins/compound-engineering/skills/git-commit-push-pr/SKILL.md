@@ -21,7 +21,13 @@ command git log --oneline -10
 command git rev-parse --abbrev-ref origin/HEAD
 ```
 
-The last command returns the remote default branch (e.g., `origin/main`). Strip the `origin/` prefix to get the branch name. If the command fails or returns a bare `HEAD`, fall back to `main`.
+The last command returns the remote default branch (e.g., `origin/main`). Strip the `origin/` prefix to get the branch name. If the command fails or returns a bare `HEAD`, try:
+
+```bash
+command gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+```
+
+If both fail, fall back to `main`.
 
 If there are no changes, report that and stop.
 
