@@ -127,6 +127,7 @@ Agents are specialized subagents invoked by skills — you typically don't call 
 | `security-sentinel` | Security audits and vulnerability assessments |
 | `testing-reviewer` | Test coverage gaps, weak assertions |
 | `project-standards-reviewer` | CLAUDE.md and AGENTS.md compliance |
+| `adversarial-reviewer` | Construct failure scenarios to break implementations across component boundaries |
 
 ### Document Review
 
@@ -138,6 +139,7 @@ Agents are specialized subagents invoked by skills — you typically don't call 
 | `product-lens-reviewer` | Challenge problem framing, evaluate scope decisions, surface goal misalignment |
 | `scope-guardian-reviewer` | Challenge unjustified complexity, scope creep, and premature abstractions |
 | `security-lens-reviewer` | Evaluate plans for security gaps at the plan level (auth, data, APIs) |
+| `adversarial-document-reviewer` | Challenge premises, surface unstated assumptions, and stress-test decisions |
 
 ### Research
 

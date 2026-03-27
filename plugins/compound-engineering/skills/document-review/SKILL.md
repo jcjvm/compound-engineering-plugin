@@ -48,6 +48,12 @@ Analyze the document content to determine which conditional personas to activate
 - Scope boundary language that seems misaligned with stated goals
 - Goals that don't clearly connect to requirements
 
+**adversarial** -- activate when the document contains:
+- More than 5 distinct requirements or implementation units
+- Explicit architectural or scope decisions with stated rationale
+- High-stakes domains (auth, payments, data migrations, external integrations)
+- Proposals of new abstractions, frameworks, or significant architectural patterns
+
 ## Phase 2: Announce and Dispatch Personas
 
 ### Announce the Review Team
@@ -73,6 +79,7 @@ Add activated conditional personas:
 - `compound-engineering:document-review:design-lens-reviewer`
 - `compound-engineering:document-review:security-lens-reviewer`
 - `compound-engineering:document-review:scope-guardian-reviewer`
+- `compound-engineering:document-review:adversarial-document-reviewer`
 
 ### Dispatch
 
@@ -90,7 +97,7 @@ Pass each agent the **full document** -- do not split into sections.
 
 **Error handling:** If an agent fails or times out, proceed with findings from agents that completed. Note the failed agent in the Coverage section. Do not block the entire review on a single agent failure.
 
-**Dispatch limit:** Even at maximum (6 agents), use parallel dispatch. These are document reviewers with bounded scope reading a single document -- parallel is safe and fast.
+**Dispatch limit:** Even at maximum (7 agents), use parallel dispatch. These are document reviewers with bounded scope reading a single document -- parallel is safe and fast.
 
 ## Phase 3: Synthesize Findings
 

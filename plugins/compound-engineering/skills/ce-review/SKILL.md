@@ -73,7 +73,7 @@ Routing rules:
 
 ## Reviewers
 
-14 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
+15 reviewer personas in layered conditionals, plus CE-specific agents. See the persona catalog included below for the full catalog.
 
 **Always-on (every review):**
 
@@ -95,6 +95,7 @@ Routing rules:
 | `compound-engineering:review:api-contract-reviewer` | Routes, serializers, type signatures, versioning |
 | `compound-engineering:review:data-migrations-reviewer` | Migrations, schema changes, backfills |
 | `compound-engineering:review:reliability-reviewer` | Error handling, retries, timeouts, background jobs |
+| `compound-engineering:review:adversarial-reviewer` | Diff >=50 changed non-test/non-generated/non-lockfile lines, or auth, payments, data mutations, external APIs |
 
 **Stack-specific conditional (selected per diff):**
 
