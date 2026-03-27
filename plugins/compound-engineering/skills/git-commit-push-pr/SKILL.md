@@ -11,20 +11,20 @@ Go from working tree changes to an open pull request in a single workflow. The k
 
 ### Step 1: Gather context
 
-Run these commands. Use `command git` to bypass aliases and RTK proxies.
+Run these commands.
 
 ```bash
-command git status
-command git diff HEAD
-command git branch --show-current
-command git log --oneline -10
-command git rev-parse --abbrev-ref origin/HEAD
+git status
+git diff HEAD
+git branch --show-current
+git log --oneline -10
+git rev-parse --abbrev-ref origin/HEAD
 ```
 
 The last command returns the remote default branch (e.g., `origin/main`). Strip the `origin/` prefix to get the branch name. If the command fails or returns a bare `HEAD`, try:
 
 ```bash
-command gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
 ```
 
 If both fail, fall back to `main`.
@@ -41,22 +41,25 @@ Follow this priority order for commit messages *and* PR titles:
 
 ### Step 3: Check for existing PR
 
-Before committing, check whether a PR already exists for the current branch:
+If Step 1's `git branch --show-current` returned an empty result, the repository is in detached HEAD state -- skip PR detection and continue to Step 4.
+
+Otherwise, check for an existing open PR:
 
 ```bash
-command gh pr view --json url,title,state
+gh pr list --head "<branch>" --json url,title,state --jq '.[0] // empty'
 ```
+
+Replace `<branch>` with the branch name from Step 1. The default `--state open` filter ensures only active PRs are matched -- closed or merged PRs are ignored automatically, so a new PR will be created.
 
 Interpret the result:
 
-- If it **returns PR data with `state: OPEN`**, note the URL and continue to Step 4 (commit) and Step 5 (push). Then skip to Step 7 (existing PR flow) instead of creating a new PR.
-- If it **returns PR data with a non-OPEN state** (CLOSED, MERGED), treat this the same as "no PR exists" -- the previous PR is done and a new one is needed.
-- If it **errors with "no pull requests found"**, no PR exists. Continue to Step 4 through Step 8 as normal.
-- If it **errors for another reason** (auth, network, repo config), report the error to the user and stop.
+- If it **returns PR data**, an open PR exists. Note the URL and continue to Step 4 (commit) and Step 5 (push). Then skip to Step 7 (existing PR flow) instead of creating a new PR.
+- If it **returns empty/nothing**, no open PR exists. Continue to Step 4 through Step 8 as normal.
+- If it **errors** (auth, network, repo config), report the error to the user and stop.
 
 ### Step 4: Branch, stage, and commit
 
-1. If on `main`, `master`, or the resolved default branch from Step 1, create a descriptive feature branch first (`command git checkout -b <branch-name>`). Derive the branch name from the change content.
+1. If on `main`, `master`, or the resolved default branch from Step 1, create a descriptive feature branch first (`git checkout -b <branch-name>`). Derive the branch name from the change content.
 2. Before staging everything together, scan the changed files for naturally distinct concerns. If modified files clearly group into separate logical changes (e.g., a refactor in one set of files and a new feature in another), create separate commits for each group. Keep this lightweight -- group at the **file level only** (no `git add -p`), split only when obvious, and aim for two or three logical commits at most. If it's ambiguous, one commit is fine.
 3. Stage relevant files by name. Avoid `git add -A` or `git add .` to prevent accidentally including sensitive files.
 4. Commit following the conventions from Step 2. Use a heredoc for the message.
@@ -64,7 +67,7 @@ Interpret the result:
 ### Step 5: Push
 
 ```bash
-command git push -u origin HEAD
+git push -u origin HEAD
 ```
 
 ### Step 6: Write the PR description
@@ -79,26 +82,26 @@ Use this fallback chain. Stop at the first that succeeds:
 
 1. **PR metadata** (if an existing PR was found in Step 3):
    ```bash
-   command gh pr view --json baseRefName,url
+   gh pr view --json baseRefName,url
    ```
    Extract `baseRefName` as the base branch name. The PR URL contains the base repository (`https://github.com/<owner>/<repo>/pull/...`). Determine which local remote corresponds to that repository:
    ```bash
-   command git remote -v
+   git remote -v
    ```
    Match the `owner/repo` from the PR URL against the fetch URLs. Use the matching remote as the base remote. If no remote matches, fall back to `origin`.
 2. **`origin/HEAD` symbolic ref:**
    ```bash
-   command git symbolic-ref --quiet --short refs/remotes/origin/HEAD
+   git symbolic-ref --quiet --short refs/remotes/origin/HEAD
    ```
    Strip the `origin/` prefix from the result. Use `origin` as the base remote.
 3. **GitHub default branch metadata:**
    ```bash
-   command gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+   gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
    ```
    Use `origin` as the base remote.
 4. **Common branch names** -- check `main`, `master`, `develop`, `trunk` in order. Use the first that exists on the remote:
    ```bash
-   command git rev-parse --verify origin/<candidate>
+   git rev-parse --verify origin/<candidate>
    ```
    Use `origin` as the base remote.
 
@@ -110,23 +113,23 @@ Once the base branch and remote are known:
 
 1. Verify the remote-tracking ref exists locally and fetch if needed:
    ```bash
-   command git rev-parse --verify <base-remote>/<base-branch>
+   git rev-parse --verify <base-remote>/<base-branch>
    ```
    If this fails (ref missing or stale), fetch it:
    ```bash
-   command git fetch --no-tags <base-remote> <base-branch>
+   git fetch --no-tags <base-remote> <base-branch>
    ```
 2. Find the merge base:
    ```bash
-   command git merge-base <base-remote>/<base-branch> HEAD
+   git merge-base <base-remote>/<base-branch> HEAD
    ```
 2. List all commits unique to this branch:
    ```bash
-   command git log --oneline <merge-base>..HEAD
+   git log --oneline <merge-base>..HEAD
    ```
 3. Get the full diff a reviewer will see:
    ```bash
-   command git diff <merge-base>...HEAD
+   git diff <merge-base>...HEAD
    ```
 
 Use the full branch diff and commit list as the basis for the PR description -- not the working-tree diff from Step 1.
@@ -218,7 +221,7 @@ Fill in at PR creation time:
 #### New PR (no existing PR from Step 3)
 
 ```bash
-command gh pr create --title "the pr title" --body "$(cat <<'EOF'
+gh pr create --title "the pr title" --body "$(cat <<'EOF'
 PR description here
 
 ---
@@ -238,7 +241,7 @@ The new commits are already on the PR from the push in Step 5. Report the PR URL
 - If **yes** -- write a new description following the same principles in Step 6 (size the full PR, not just the new commits), including the Compound Engineering badge unless one is already present in the existing description. Apply it:
 
   ```bash
-  command gh pr edit --body "$(cat <<'EOF'
+  gh pr edit --body "$(cat <<'EOF'
   Updated description here
   EOF
   )"
@@ -250,6 +253,3 @@ The new commits are already on the PR from the push in Step 5. Report the PR URL
 
 Output the PR URL so the user can navigate to it directly.
 
-## Important: Use `command git` and `command gh`
-
-Always invoke git as `command git` and gh as `command gh` in shell commands. This bypasses shell aliases and tools like RTK (Rust Token Killer) that proxy commands.
