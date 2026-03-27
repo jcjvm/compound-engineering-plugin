@@ -186,8 +186,13 @@ topic: <kebab-case-topic>
 [Who is affected, what is changing, and why it matters]
 
 ## Requirements
-- R1. [Concrete user-facing behavior or requirement]
-- R2. [Concrete user-facing behavior or requirement]
+
+**[Group Header]**
+- R1. [Concrete requirement in this group]
+- R2. [Concrete requirement in this group]
+
+**[Group Header]**
+- R3. [Concrete requirement in this group]
 
 ## Success Criteria
 - [How we will know this solved the right problem]
@@ -220,6 +225,8 @@ For **Standard** and **Deep** brainstorms, a requirements document is usually wa
 For **Lightweight** brainstorms, keep the document compact. Skip document creation when the user only needs brief alignment and no durable decisions need to be preserved.
 
 For very small requirements docs with only 1-3 simple requirements, plain bullet requirements are acceptable. For **Standard** and **Deep** requirements docs, use stable IDs like `R1`, `R2`, `R3` so planning and later review can refer to them unambiguously.
+
+When requirements span multiple distinct concerns, group them under bold topic headers within the Requirements section. The trigger for grouping is distinct logical areas, not item count — even four requirements benefit from headers if they cover three different topics. Group by logical theme (e.g., "Packaging", "Migration and Compatibility", "Contributor Workflow"), not by the order they were discussed. Requirements keep their original stable IDs — numbering does not restart per group. A requirement belongs to whichever group it fits best; do not duplicate it across groups. Skip grouping only when all requirements are about the same thing.
 
 When the work is simple, combine sections rather than padding them. A short requirements document is better than a bloated one.
 

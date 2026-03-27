@@ -98,7 +98,7 @@
     },
     "autofix_classes": {
       "auto": "Local, deterministic document fix: terminology consistency, formatting, cross-reference correction, completeness corrections (wrong counts, missing list entries, undefined values where the correct value is verifiable from elsewhere in the document). Must be unambiguous.",
-      "batch_confirm": "Obvious fix with a clear correct answer, but touches document meaning enough to warrant user awareness. Grouped with other batch_confirm findings for a single approval rather than individual review. Examples: adding a missing implementation step that is mechanically implied, updating a section summary to reflect its own contents.",
+      "batch_confirm": "Obvious fix with a clear correct answer, but requires authoring new content where exact wording needs verification. Grouped with other batch_confirm findings for a single approval rather than individual review. Examples: adding a missing implementation step that is mechanically implied, rewording a section to resolve an ambiguity. Note: fixes that are deterministically derivable from existing document content (updating a summary to match its own list, correcting a count, adding group headers to requirements) belong in auto, not here.",
       "present": "Requires individual user judgment -- strategic questions, design tradeoffs, meaning-changing fixes, or findings where reasonable people could disagree on the right action."
     },
     "finding_types": {
