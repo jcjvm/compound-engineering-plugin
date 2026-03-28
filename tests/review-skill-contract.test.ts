@@ -32,9 +32,9 @@ describe("ce-review contract", () => {
     // Headless mode has its own rules section
     expect(content).toContain("### Headless mode rules")
 
-    // No interactive prompts
+    // No interactive prompts (cross-platform)
     expect(content).toContain(
-      "Never use `AskUserQuestion` or other interactive prompts",
+      "Never use the platform question tool",
     )
 
     // Structured output format
@@ -47,14 +47,20 @@ describe("ce-review contract", () => {
       "Not safe for concurrent use on a shared checkout.",
     )
 
-    // Writes artifacts but no todos
+    // Writes artifacts but no todos, no commit/push/PR
     expect(content).toContain("Do not create todo files.")
+    expect(content).toContain(
+      "Never commit, push, or create a PR",
+    )
+
+    // Single-pass fixing, no bounded re-review rounds
+    expect(content).toContain("No bounded re-review rounds")
 
     // Checkout guard — headless shares report-only's guard
     expect(content).toMatch(/mode:headless.*must run in an isolated checkout\/worktree or stop/)
 
     // Conflicting mode flags
-    expect(content).toContain("Conflicting mode flags:")
+    expect(content).toContain("**Conflicting mode flags:**")
 
     // Structured error for missing scope
     expect(content).toContain("Review failed (headless mode). Reason: no diff scope detected.")
