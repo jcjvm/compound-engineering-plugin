@@ -14,6 +14,7 @@ describe("ce-review contract", () => {
     expect(content).toContain("## Mode Detection")
     expect(content).toContain("mode:autofix")
     expect(content).toContain("mode:report-only")
+    expect(content).toContain("mode:headless")
     expect(content).toContain(".context/compound-engineering/ce-review/<run-id>/")
     expect(content).toContain("Do not create residual todos or `.context` artifacts.")
     expect(content).toContain(
@@ -23,6 +24,43 @@ describe("ce-review contract", () => {
     expect(content).toContain("mode:report-only cannot switch the shared checkout to review another branch")
     expect(content).toContain("Resolve the base ref from the PR's actual base repository, not by assuming `origin`")
     expect(content).not.toContain("Which severities should I fix?")
+  })
+
+  test("documents headless mode contract for programmatic callers", async () => {
+    const content = await readRepoFile("plugins/compound-engineering/skills/ce-review/SKILL.md")
+
+    // Headless mode has its own rules section
+    expect(content).toContain("### Headless mode rules")
+
+    // No interactive prompts
+    expect(content).toContain(
+      "Never use `AskUserQuestion` or other interactive prompts",
+    )
+
+    // Structured output format
+    expect(content).toContain("### Headless output format")
+    expect(content).toContain("Code review complete (headless mode).")
+    expect(content).toContain('"Review complete" as the terminal signal')
+
+    // Applies safe_auto fixes but NOT safe for concurrent use
+    expect(content).toContain(
+      "Not safe for concurrent use on a shared checkout.",
+    )
+
+    // Writes artifacts but no todos
+    expect(content).toContain("Do not create todo files.")
+
+    // Checkout guard — headless shares report-only's guard
+    expect(content).toMatch(/mode:headless.*must run in an isolated checkout\/worktree or stop/)
+
+    // Conflicting mode flags
+    expect(content).toContain("Conflicting mode flags:")
+
+    // Structured error for missing scope
+    expect(content).toContain("Review failed (headless mode). Reason: no diff scope detected.")
+
+    // Degraded signal when all reviewers fail
+    expect(content).toContain("Code review degraded (headless mode).")
   })
 
   test("documents policy-driven routing and residual handoff", async () => {
