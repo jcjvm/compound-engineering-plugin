@@ -79,7 +79,7 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
    - Determines the track (bug or knowledge) from the problem_type
    - Identifies problem type, component, and track-appropriate fields:
      - **Bug track**: symptoms, root_cause, resolution_type
-     - **Knowledge track**: motivation, applies_when (symptoms/root_cause/resolution_type optional)
+     - **Knowledge track**: applies_when (symptoms/root_cause/resolution_type optional)
    - Incorporates auto memory excerpts (if provided by the orchestrator) as supplementary evidence
    - Reads `references/yaml-schema.md` for category mapping into `docs/solutions/`
    - Suggests a filename using the pattern `[sanitized-problem-slug]-[date].md`
