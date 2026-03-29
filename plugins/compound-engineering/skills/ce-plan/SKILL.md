@@ -600,11 +600,12 @@ Visual aids are conditional on content patterns, not on plan depth classificatio
 - The visual describes code-level detail (specific method names, SQL columns, API field lists)
 
 **Format selection:**
-- **Mermaid** (default) for dependency graphs and interaction diagrams. Use `TB` (top-to-bottom) direction. Source should be readable as fallback in diff views and terminals.
+- **Mermaid** (default) for dependency graphs and interaction diagrams -- 5-15 nodes, no in-box annotations, standard flowchart shapes. Use `TB` (top-to-bottom) direction so diagrams stay narrow in both rendered and source form. Source should be readable as fallback in diff views and terminals.
+- **ASCII/box-drawing diagrams** for annotated flows that need rich in-box content -- file path layouts, decision logic branches, multi-column spatial arrangements. More expressive than mermaid when the diagram's value comes from annotations within nodes. Follow 80-column max for code blocks, use vertical stacking.
 - **Markdown tables** for mode/variant comparisons and decision/approach comparisons.
-- **ASCII/box-drawing** only when rich in-box annotations (commands, decision logic branches) are needed. Follow 80-column max for code blocks.
-- Keep proportionate -- a 6-unit plan gets a simple 6-node graph, not an elaborate diagram. Every node should earn its place.
+- Keep diagrams proportionate to the plan. A 6-unit linear chain gets a simple 6-node graph. A complex dependency graph with fan-out and fan-in may need 10-15 nodes -- that is fine if every node earns its place.
 - Place inline at the point of relevance, not in a separate section.
+- Plan-structure level only -- unit dependencies, component interactions, mode comparisons, impact surfaces. Not implementation architecture, data schemas, or code structure (those belong in Section 3.4).
 - Prose is authoritative: when a visual aid and its surrounding prose disagree, the prose governs.
 
 After generating a visual aid, verify it accurately represents the plan sections it illustrates -- correct dependency edges, no missing surfaces, no merged units.

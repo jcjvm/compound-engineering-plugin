@@ -30,7 +30,7 @@ Evidence from real plans:
 - R3. Visual aids are distinct from Section 3.4 (High-Level Technical Design) — they improve *plan document readability*, not the *solution's technical design*
 - R4. Three diagram types at the plan level: implementation unit dependency graphs, system-wide interaction diagrams, and comparison tables for modes/decisions
 - R5. The existing plan template, Section 3.4, and planning rules remain intact; the pre-finalization checklist in Phase 5.1 gains one additional visual-aid check
-- R6. Format selection reuses brainstorm's established framework (mermaid default, ASCII for annotated flows, markdown tables for comparisons)
+- R6. Format selection is self-contained, following the same structure as brainstorm's guidance (mermaid default, ASCII for annotated flows, markdown tables for comparisons) but restated with plan-appropriate detail
 
 ## Scope Boundaries
 
@@ -68,7 +68,7 @@ Evidence from real plans:
 
 - **Content triggers, not depth triggers**: Reuses brainstorm's established principle. A Lightweight plan about a complex workflow may warrant a dependency graph; a Deep plan about a straightforward feature may not.
 
-- **Reuse brainstorm's format selection framework**: Mermaid default, ASCII for annotated flows, markdown tables for comparisons. No need to define a separate format framework.
+- **Self-contained format selection, same structure as brainstorm**: Skills are self-contained and cannot reference each other's guidance. The format selection section restates the framework (mermaid default, ASCII for annotated flows, markdown tables for comparisons) with plan-appropriate detail rather than pointing to brainstorm.
 
 - **Relationship to existing Section 4.3 mermaid rule**: Section 4.3 Planning Rules already contains a line encouraging mermaid diagrams "when they clarify relationships or flows that prose alone would make hard to follow — ERDs for data model changes, sequence diagrams for multi-service interactions, state diagrams for lifecycle transitions, flowcharts for complex branching logic." That existing rule applies to solution-design diagrams within the High-Level Technical Design section and per-unit technical design fields — it's an extension of Section 3.4's guidance into the planning rules. The new visual communication guidance applies to plan-readability diagrams in other sections (dependency graphs, interaction diagrams in System-Wide Impact, comparison tables in Overview). Leave the existing Section 4.3 rule as-is and add the new guidance after it as a distinct subsection. The introductory paragraph should distinguish from both Section 3.4 and the existing 4.3 mermaid rule.
 
@@ -118,11 +118,11 @@ Add a new subsection after Section 4.3 (Planning Rules) and before Phase 5 (Fina
    - The visual would duplicate what Section 3.4's High-Level Technical Design already shows
    - The visual describes code-level detail (specific method names, SQL columns, API field lists)
 
-4. **Format selection** — Reference brainstorm's framework rather than restating it:
-   - Mermaid (default) for dependency graphs and interaction diagrams
+4. **Format selection** — Self-contained guidance matching brainstorm's structure but with plan-appropriate detail:
+   - Mermaid (default) for dependency graphs and interaction diagrams — 5-15 nodes, no in-box annotations, TB direction
+   - ASCII/box-drawing for annotated flows needing rich in-box content — file path layouts, decision logic branches
    - Markdown tables for mode/variant/decision comparisons
-   - ASCII only when rich in-box annotations (commands, decision branches) are needed
-   - Keep proportionate — a 6-unit plan gets a simple 6-node graph, not an elaborate diagram
+   - Proportionality, inline placement, plan-structure level only, prose-is-authoritative
 
 5. **Pre-finalization check addition** — Add one check to Phase 5.1: "Would a visual aid (dependency graph, interaction diagram, comparison table) help a reader grasp the plan structure faster than scanning prose alone?"
 
