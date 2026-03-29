@@ -163,6 +163,17 @@ If a reviewer flags any file in these directories for cleanup or removal, discar
 
 Compute the diff range, file list, and diff. Minimize permission prompts by combining into as few commands as possible.
 
+**Bot-PR eligibility check (PR path only):** When a PR number or GitHub URL is provided, check the PR author before proceeding:
+
+```
+gh pr view <number-or-url> --json author --jq '.author.login'
+```
+
+If the author is a known bot (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, `snyk-bot`), handle by mode:
+- **Interactive:** Warn the user: "This PR was authored by `<author>` (a dependency bot). Bot PRs are mechanical dependency bumps that rarely benefit from a full code review. Continue anyway?" Proceed only if the user confirms.
+- **Headless/autofix:** Emit `Review skipped (headless mode). Reason: bot-authored PR (<author>). Bot PRs are mechanical dependency bumps.` followed by "Review complete". Stop.
+- **Report-only:** Emit a note that this is a bot-authored PR and proceed with a minimal review (always-on personas only, skip all conditionals).
+
 **If `base:` argument is provided (fast path):**
 
 The caller already knows the diff base. Skip all base-branch detection, remote resolution, and merge-base computation. Use the provided value directly:
