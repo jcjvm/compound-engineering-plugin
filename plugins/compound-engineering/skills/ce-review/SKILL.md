@@ -371,6 +371,22 @@ Pass the resulting path list to the `project-standards` persona inside a `<stand
 
 ### Stage 4: Spawn sub-agents
 
+#### Model tiering
+
+Persona sub-agents do focused, scoped work and should use cheaper/faster models to reduce cost and latency. The orchestrator itself stays on the default (most capable) model.
+
+| Platform | Persona agent model | How to set |
+|----------|-------------------|------------|
+| **Claude Code** | Haiku | Pass `model: "haiku"` in the Agent tool call |
+| **Codex** | GPT-4o mini | Set the model parameter to `gpt-4o-mini` in the agent spawn config |
+| **Other platforms** | Cheapest capable model available | Use the platform's equivalent of a fast/cheap tier |
+
+CE always-on agents (agent-native-reviewer, learnings-researcher) and CE conditional agents (schema-drift-detector, deployment-verification-agent) also use the cheaper model tier since they perform scoped, focused work.
+
+The orchestrator (this skill) stays on the default model because it handles intent discovery, reviewer selection, finding merge/dedup, and synthesis -- tasks that benefit from stronger reasoning.
+
+#### Spawning
+
 Spawn each selected persona reviewer as a parallel sub-agent using the subagent template included below. Each persona sub-agent receives:
 
 1. Their persona file content (identity, failure modes, calibration, suppress conditions)
