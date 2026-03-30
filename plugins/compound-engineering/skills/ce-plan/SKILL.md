@@ -935,7 +935,7 @@ If research reveals a product-level ambiguity that should change behavior or sco
 
 ##### 5.3.8 Document Review
 
-After the confidence check (and any deepening), run the `document-review` skill on the plan file. Pass the plan path as the argument. This step is mandatory in both auto and interactive modes — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
+After the confidence check (and any deepening), run the `document-review` skill on the plan file. Pass the plan path as the argument. When this step is reached, it is mandatory — do not skip it because the confidence check already ran. The two tools catch different classes of issues.
 
 The confidence check and document-review are complementary:
 - The confidence check strengthens rationale, sequencing, risk treatment, and grounding
