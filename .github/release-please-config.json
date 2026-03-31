@@ -14,6 +14,24 @@
     ".": {
       "release-type": "simple",
       "package-name": "cli",
+      "exclude-paths": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+        "LICENSE",
+        "SECURITY.md",
+        "PRIVACY.md",
+        "favicon.png",
+        "docs/",
+        "scripts/",
+        ".github/",
+        ".claude/",
+        ".codex/",
+        ".agents/",
+        ".gemini/",
+        ".cursor/",
+        ".windsurf/"
+      ],
       "extra-files": [
         {
           "type": "json",
