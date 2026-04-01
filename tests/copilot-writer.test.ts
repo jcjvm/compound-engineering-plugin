@@ -203,6 +203,116 @@ Run these research agents:
     expect(installedSkill).not.toContain("Task compound-engineering:")
   })
 
+  test("removes stale plugin MCP servers on re-install", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "copilot-converge-"))
+    const githubRoot = path.join(tempRoot, ".github")
+
+    const bundle1: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      mcpConfig: { old: { type: "local", command: "old-server", tools: ["*"] } },
+    }
+    const bundle2: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      mcpConfig: { fresh: { type: "local", command: "new-server", tools: ["*"] } },
+    }
+
+    await writeCopilotBundle(tempRoot, bundle1)
+    await writeCopilotBundle(tempRoot, bundle2)
+
+    const result = JSON.parse(await fs.readFile(path.join(githubRoot, "copilot-mcp-config.json"), "utf8"))
+    expect(result.mcpServers.fresh).toBeDefined()
+    expect(result.mcpServers.old).toBeUndefined()
+  })
+
+  test("cleans up all plugin MCP servers when bundle has none", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "copilot-zero-"))
+    const githubRoot = path.join(tempRoot, ".github")
+
+    const bundle1: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      mcpConfig: { old: { type: "local", command: "old-server", tools: ["*"] } },
+    }
+    const bundle2: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      // No mcpConfig
+    }
+
+    await writeCopilotBundle(tempRoot, bundle1)
+    await writeCopilotBundle(tempRoot, bundle2)
+
+    const result = JSON.parse(await fs.readFile(path.join(githubRoot, "copilot-mcp-config.json"), "utf8"))
+    expect(result.mcpServers.old).toBeUndefined()
+    expect(result._compound_managed_mcp).toBeUndefined()
+  })
+
+  test("preserves user-added MCP servers across re-installs", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "copilot-user-mcp-"))
+    const githubRoot = path.join(tempRoot, ".github")
+    await fs.mkdir(githubRoot, { recursive: true })
+
+    // User has their own MCP server alongside plugin-managed ones (tracking key present)
+    await fs.writeFile(
+      path.join(githubRoot, "copilot-mcp-config.json"),
+      JSON.stringify({
+        mcpServers: { "user-tool": { type: "local", command: "my-tool", tools: ["*"] } },
+        _compound_managed_mcp: [],
+      }),
+    )
+
+    const bundle: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      mcpConfig: { plugin: { type: "local", command: "plugin-server", tools: ["*"] } },
+    }
+
+    await writeCopilotBundle(githubRoot, bundle)
+
+    const result = JSON.parse(await fs.readFile(path.join(githubRoot, "copilot-mcp-config.json"), "utf8"))
+    expect(result.mcpServers["user-tool"]).toBeDefined()
+    expect(result.mcpServers.plugin).toBeDefined()
+  })
+
+  test("prunes stale servers from legacy config without tracking key", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "copilot-legacy-"))
+    const githubRoot = path.join(tempRoot, ".github")
+    await fs.mkdir(githubRoot, { recursive: true })
+
+    // Simulate old writer output: has mcpServers but no _compound_managed_mcp
+    await fs.writeFile(
+      path.join(githubRoot, "copilot-mcp-config.json"),
+      JSON.stringify({
+        mcpServers: {
+          old: { type: "local", command: "old-server", tools: ["*"] },
+          renamed: { type: "local", command: "renamed-server", tools: ["*"] },
+        },
+      }),
+    )
+
+    const bundle: CopilotBundle = {
+      agents: [],
+      generatedSkills: [],
+      skillDirs: [],
+      mcpConfig: { fresh: { type: "local", command: "new-server", tools: ["*"] } },
+    }
+
+    await writeCopilotBundle(githubRoot, bundle)
+
+    const result = JSON.parse(await fs.readFile(path.join(githubRoot, "copilot-mcp-config.json"), "utf8"))
+    expect(result.mcpServers.fresh).toBeDefined()
+    expect(result.mcpServers.old).toBeUndefined()
+    expect(result.mcpServers.renamed).toBeUndefined()
+    expect(result._compound_managed_mcp).toEqual(["fresh"])
+  })
+
   test("creates skill directories with SKILL.md", async () => {
     const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "copilot-genskill-"))
     const bundle: CopilotBundle = {
