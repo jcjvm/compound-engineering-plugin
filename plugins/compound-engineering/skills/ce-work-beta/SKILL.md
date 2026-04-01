@@ -470,9 +470,15 @@ Run these checks in order when `delegation_active` is true. If any check fails, 
 Check whether the current agent is already running inside a Codex sandbox:
 
 ```bash
-# If either variable is set, delegation would recurse or fail
-test -n "$CODEX_SANDBOX" || test -n "$CODEX_SESSION_ID"
+# Returns "true" if inside a sandbox, "false" if not
+if [ -n "$CODEX_SANDBOX" ] || [ -n "$CODEX_SESSION_ID" ]; then
+  echo "inside_sandbox=true"
+else
+  echo "inside_sandbox=false"
+fi
 ```
+
+If `inside_sandbox` is true (either variable was set), delegation would recurse or fail.
 
 If inside a sandbox:
 - If `delegation_source` is `argument` (user explicitly requested delegation): emit "Already inside Codex sandbox -- using standard mode." and set `delegation_active` to false.
