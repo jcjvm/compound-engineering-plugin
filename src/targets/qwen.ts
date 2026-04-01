@@ -91,12 +91,9 @@ async function mergeQwenConfig(
     delete merged.mcpServers
   }
 
-  const incomingKeys = Object.keys(incomingMcp)
-  if (incomingKeys.length > 0) {
-    merged[MANAGED_KEY] = incomingKeys
-  } else {
-    delete merged[MANAGED_KEY]
-  }
+  // Always write the tracking key (even as []) so the legacy fallback
+  // doesn't treat user servers as plugin-managed on a future install.
+  merged[MANAGED_KEY] = Object.keys(incomingMcp)
 
   return merged as QwenExtensionConfig
 }

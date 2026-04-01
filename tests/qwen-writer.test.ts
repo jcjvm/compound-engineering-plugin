@@ -96,6 +96,30 @@ describe("writeQwenBundle", () => {
 
     const result = JSON.parse(await fs.readFile(path.join(tempRoot, "qwen-extension.json"), "utf8"))
     expect(result.mcpServers).toBeUndefined()
-    expect(result._compound_managed_mcp).toBeUndefined()
+    expect(result._compound_managed_mcp).toEqual([])
+  })
+
+  test("preserves user servers across zero-MCP-then-MCP round trip", async () => {
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "qwen-roundtrip-"))
+
+    // 1. Install with plugin MCP
+    await writeQwenBundle(tempRoot, makeBundle({ plugin: { command: "plugin-server" } }))
+
+    // 2. User adds their own server (with tracking key present)
+    const configPath = path.join(tempRoot, "qwen-extension.json")
+    const afterInstall = JSON.parse(await fs.readFile(configPath, "utf8"))
+    afterInstall.mcpServers["user-tool"] = { command: "my-tool" }
+    await fs.writeFile(configPath, JSON.stringify(afterInstall))
+
+    // 3. Install with zero plugin MCP
+    await writeQwenBundle(tempRoot, makeBundle())
+
+    // 4. Install with plugin MCP again
+    await writeQwenBundle(tempRoot, makeBundle({ new_plugin: { command: "new-plugin" } }))
+
+    const result = JSON.parse(await fs.readFile(configPath, "utf8"))
+    expect(result.mcpServers["user-tool"]).toBeDefined()
+    expect(result.mcpServers.new_plugin).toBeDefined()
+    expect(result.mcpServers.plugin).toBeUndefined()
   })
 })
