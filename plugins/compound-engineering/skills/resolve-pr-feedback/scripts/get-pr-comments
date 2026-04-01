@@ -37,7 +37,7 @@ query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $pr) {
       author { login }
-      reviewThreads(first: 100) {
+      reviewThreads(first: 50) {
         edges {
           node {
             id
@@ -45,7 +45,7 @@ query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
             isOutdated
             path
             line
-            comments(first: 50) {
+            comments(first: 10) {
               nodes {
                 id
                 author { login }
