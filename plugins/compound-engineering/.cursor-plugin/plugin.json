@@ -26,6 +26,5 @@
     "image-generation",
     "agent-browser",
     "browser-automation"
-  ],
-  "mcpServers": ".mcp.json"
+  ]
 }
