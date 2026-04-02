@@ -200,7 +200,7 @@ If tracked files are dirty, stop and present options: (1) commit current changes
 **Delegation invocation:** For each batch:
 
 1. Write the prompt file using the Prompt Template above
-2. Execute the Codex CLI verbatim:
+2. Launch the Codex CLI in the **background** (no timeout ceiling):
 
 ```bash
 # Resolve sandbox flag
@@ -219,9 +219,24 @@ codex exec \
   - < .context/compound-engineering/codex-delegation/<run-id>/prompt-batch-<batch-num>.md
 ```
 
+Run this command with `run_in_background: true` so there is no timeout ceiling. Codex batches can take 5-20+ minutes depending on plan size and test-fix iterations.
+
 Quoting is critical for the `-c` flag: use single quotes around the entire key=value and double quotes around the TOML string value inside. Example: `-c 'model_reasoning_effort="high"'`. The `-m` value does not need special quoting unless the model name contains spaces.
 
 Do not improvise CLI flags or modify this invocation template.
+
+3. **Poll for completion.** Immediately after launching, enter a foreground polling loop that checks every 10 seconds whether the result file exists. This keeps the agent's turn active so the user cannot interfere with the working tree during delegation.
+
+```bash
+RESULT_FILE=".context/compound-engineering/codex-delegation/<run-id>/result-batch-<batch-num>.json"
+for i in $(seq 1 6); do
+  test -s "$RESULT_FILE" && echo "DONE" && exit 0
+  sleep 10
+done
+echo "Waiting for Codex..."
+```
+
+If the output is "Waiting for Codex...", issue the same polling command again. Repeat until the result file appears. When the output is "DONE", read the result file and proceed to classification.
 
 **Result classification:** Codex is responsible for running verification internally and fixing failures before reporting -- the orchestrator does not re-run verification independently.
 
