@@ -55,7 +55,9 @@ If the caller provided no topic or search context, return:
 
 ### Step 2: Search
 
-Use your judgment to formulate 2-3 targeted searches using `slack_search_public_and_private`. Derive search terms from the task context -- project names, technical terms, decision-related keywords, whatever is most likely to surface relevant discussions. This is standard agent search behavior: adapt terms, broaden or rephrase if initial queries return sparse results, and apply date filtering to focus on recent conversations when the MCP supports it.
+Formulate targeted searches using `slack_search_public_and_private`. Derive search terms from the task context -- project names, technical terms, decision-related keywords, whatever is most likely to surface relevant discussions. Use 2-3 searches for a single-topic dispatch; scale up if the caller provides multiple distinct dimensions to cover. Adapt terms, broaden or rephrase if initial queries return sparse results, and apply date filtering to focus on recent conversations when the MCP supports it.
+
+If the caller provides prior Slack findings (e.g., from an earlier brainstorm), review them first and focus searches on gaps -- implementation-specific context, technical decisions, or dimensions not already covered. Do not re-research what is already known.
 
 Search public and private channels (set `channel_types` to `"public_channel,private_channel"` -- do not search DMs). The user has already authenticated the Slack MCP.
 
