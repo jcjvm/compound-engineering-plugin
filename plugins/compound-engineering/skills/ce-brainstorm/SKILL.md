@@ -139,6 +139,7 @@ Before generating approaches, challenge the request to catch misframing. Match d
 Follow the Interaction Rules above. Use the platform's blocking question tool when available.
 
 **Guidelines:**
+- Ask what the user is already thinking before offering your own ideas. This surfaces hidden context and prevents fixation on AI-generated framings.
 - Start broad (problem, users, value) then narrow (constraints, exclusions, edge cases)
 - Clarify the problem frame, validate assumptions, and ask about success criteria
 - Make requirements concrete enough that planning will not need to invent behavior
@@ -152,6 +153,10 @@ Follow the Interaction Rules above. Use the platform's blocking question tool wh
 
 If multiple plausible directions remain, propose **2-3 concrete approaches** based on research and conversation. Otherwise state the recommended direction directly.
 
+Use at least one non-obvious angle — inversion (what if we did the opposite?), constraint removal (what if X weren't a limitation?), or analogy from how another domain solves this. The first approaches that come to mind are usually variations on the same axis.
+
+Present approaches first, then evaluate. Let the user see all options before hearing which one is recommended — leading with a recommendation before the user has seen alternatives anchors the conversation prematurely.
+
 When useful, include one deliberately higher-upside alternative:
 - Identify what adjacent addition or reframing would most increase usefulness, compounding value, or durability without disproportionate carrying cost. Present it as a challenger option alongside the baseline, not as the default. Omit it when the work is already obviously over-scoped or the baseline request is clearly the right move.
 
@@ -161,7 +166,7 @@ For each approach, provide:
 - Key risks or unknowns
 - When it's best suited
 
-Lead with your recommendation and explain why. Prefer simpler solutions when added complexity creates real carrying cost, but do not reject low-cost, high-value polish just because it is not strictly necessary.
+After presenting all approaches, state your recommendation and explain why. Prefer simpler solutions when added complexity creates real carrying cost, but do not reject low-cost, high-value polish just because it is not strictly necessary.
 
 If one approach is clearly best and alternatives are not meaningful, skip the menu and state the recommendation directly.
 
