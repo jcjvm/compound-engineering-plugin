@@ -56,6 +56,20 @@ If the user references an existing brainstorm topic or document, or there is an 
 - Confirm with the user before resuming: "Found an existing requirements doc for [topic]. Should I continue from this, or start fresh?"
 - If resuming, summarize the current state briefly, continue from its existing decisions and outstanding questions, and update the existing document instead of creating a duplicate
 
+#### 0.1b Classify Task Domain
+
+Before proceeding to Phase 0.2, classify whether this is a software task. The key question is: **does the task involve building, modifying, or architecting software?** -- not whether the task *mentions* software topics.
+
+**Software** (continue to Phase 0.2) -- the task references code, repositories, APIs, databases, or asks to build/modify/debug/deploy software.
+
+**Non-software brainstorming** (route to universal brainstorming) -- BOTH conditions must be true:
+- None of the software signals above are present
+- The task describes something the user wants to explore, decide, or think through in a non-software domain
+
+**Neither** (respond directly, skip all brainstorming phases) -- the input is a quick-help request, error message, factual question, or single-step task that doesn't need a brainstorm.
+
+**If non-software brainstorming is detected:** Read `references/universal-brainstorming.md` and use those facilitation principles to brainstorm with the user naturally. Do not follow the software brainstorming phases below.
+
 #### 0.2 Assess Whether Brainstorming Is Needed
 
 **Clear requirements indicators:**
