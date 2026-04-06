@@ -96,7 +96,7 @@ If nothing obvious appears after a short scan, say so and continue. Two rules go
 
 2. **Defer design decisions to planning** — Implementation details like schemas, migration strategies, endpoint structure, or deployment topology belong in planning, not here — unless the brainstorm is itself about a technical or architectural decision, in which case those details are the subject of the brainstorm and should be explored.
 
-**Slack context** (Standard and Deep only) — If any `slack_*` tool is available in the tool list, dispatch `compound-engineering:research:slack-researcher` with a brief summary of the brainstorm topic. If the agent returns an error or reports Slack MCP unavailable, log a warning ("Slack context unavailable: {reason}. Proceeding without organizational context.") and continue. Coordinate this dispatch at the start of Phase 1.1 alongside the inline Constraint Check and Topic Scan. Wait for all to complete before proceeding to Phase 1.2. Incorporate any Slack findings into the constraint and context awareness for the brainstorm session. Skip for Lightweight scope.
+**Slack availability hint** (Standard and Deep only) — If any `slack_*` tool is available in the tool list, include a brief note after Phase 1.1 completes: "Slack is connected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." Do not dispatch the slack-researcher agent automatically.
 
 #### 1.2 Product Pressure Test
 
