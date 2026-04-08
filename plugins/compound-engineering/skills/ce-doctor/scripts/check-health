@@ -134,7 +134,7 @@ section "Project"
 
 if [ "$legacy_cfg" = "present" ]; then
   warn "compound-engineering.local.md is obsolete"
-  detail "Run /setup to delete it and adopt .compound-engineering/config.local.yaml if needed"
+  detail "Run /ce-setup to delete it and adopt .compound-engineering/config.local.yaml if needed"
   issues=$((issues + 1))
 else
   ok "No legacy compound-engineering.local.md file"
@@ -144,7 +144,7 @@ if [ "$repo_cfg_gitignore" = "ok" ]; then
   ok ".gitignore includes .compound-engineering/config.local.yaml"
 elif [ "$repo_cfg_gitignore" = "missing" ]; then
   warn ".compound-engineering/config.local.yaml not in .gitignore"
-  detail "Run /setup to add the .gitignore entry if this machine-local file is used"
+  detail "Run /ce-setup to add the .gitignore entry if this machine-local file is used"
   issues=$((issues + 1))
 else
   skip "No repo-local .compound-engineering config detected"
@@ -160,7 +160,7 @@ if [ "$issues" -eq 0 ]; then
 else
   echo " ⚠️   ${issues} issue(s) found  ${cli_ok}/${cli_total} tools  ${env_ok}/${env_total} env"
   echo ""
-  echo " Run /setup to resolve."
+  echo " Run /ce-setup to resolve."
 fi
 
 echo ""

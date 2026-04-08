@@ -1,6 +1,6 @@
 # Dependency Registry
 
-Centralized registry of external dependencies used by compound-engineering skills and agents. Each entry contains the metadata needed for `/doctor` diagnostics and `/setup` guided installation.
+Centralized registry of external dependencies used by compound-engineering skills and agents. Each entry contains the metadata needed for `/ce-doctor` diagnostics and `/ce-setup` guided installation.
 
 To add a new dependency, add a new section following the format below. No code changes to doctor or setup are needed.
 
@@ -8,7 +8,7 @@ To add a new dependency, add a new section following the format below. No code c
 
 ## CLI Dependencies (Recommended)
 
-These are pre-selected during `/setup`. Most users should install them.
+These are pre-selected during `/ce-setup`. Most users should install them.
 
 ### agent-browser
 
@@ -43,7 +43,7 @@ These are pre-selected during `/setup`. Most users should install them.
 
 ## CLI Dependencies (Optional)
 
-These are opt-in during `/setup`. Install if you use the related skills.
+These are opt-in during `/ce-setup`. Install if you use the related skills.
 
 ### rtk
 

@@ -1,5 +1,5 @@
 ---
-name: doctor
+name: ce-doctor
 description: Diagnose Compound Engineering plugin environment health. Checks CLI dependencies, MCP servers, env vars, plugin version, obsolete repo-local config, and gitignore guidance. Use when troubleshooting missing tools, verifying setup, or before onboarding.
 disable-model-invocation: true
 ---
@@ -57,8 +57,8 @@ Append MCP results after the script output using the same emoji format:
 After presenting the combined report (script output + MCP results), display:
 
 ```
-Run /setup to install missing dependencies, clean obsolete repo-local CE files, and configure environment variables.
-Run /doctor anytime to re-check.
+Run /ce-setup to install missing dependencies, clean obsolete repo-local CE files, and configure environment variables.
+Run /ce-doctor anytime to re-check.
 ```
 
 Registry reference for additional context: [references/dependency-registry.md](./references/dependency-registry.md)

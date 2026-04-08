@@ -72,9 +72,9 @@ The primary entry points for engineering work, invoked as slash commands:
 | Skill | Description |
 |-------|-------------|
 | `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
-| `doctor` | Diagnose Compound Engineering environment health, including CLI deps, MCP servers, env vars, obsolete repo-local config, and gitignore guidance |
+| `ce-doctor` | Diagnose Compound Engineering environment health, including CLI deps, MCP servers, env vars, obsolete repo-local config, and gitignore guidance |
 | `document-review` | Review documents using parallel persona agents for role-specific feedback |
-| `setup` | Configure environment dependencies, clean obsolete repo-local config, and guide installs; code review agent selection is automatic |
+| `ce-setup` | Configure environment dependencies, clean obsolete repo-local config, and guide installs; code review agent selection is automatic |
 
 ### Content & Collaboration
 

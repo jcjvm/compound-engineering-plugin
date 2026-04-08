@@ -16,7 +16,7 @@ Replace the legacy repo-local config and storage assumptions with a two-scope st
 - `user_state_dir` for user-level CE state and per-project durable storage
 - `repo_state_dir` for repo-local CE config
 
-The work preserves the new `/doctor` + `/setup` dependency flow already added on this branch, but repoints it at the new state contract and migrates durable plugin state out of `.context/compound-engineering/...` and `todos/`.
+The work preserves the new `/ce-doctor` + `/ce-setup` dependency flow already added on this branch, but repoints it at the new state contract and migrates durable plugin state out of `.context/compound-engineering/...` and `todos/`.
 
 ## Problem Frame
 
@@ -24,10 +24,10 @@ The current plugin still treats repo-local `.context/compound-engineering/...` a
 
 ## Requirements Trace
 
-- R1-R10. Introduce YAML config under `repo_state_dir`, keep compatibility metadata minimal, and make `/setup` the sole migration owner for legacy config.
-- R11-R16. Codify the standard config/storage contract section in `AGENTS.md`, keep it cross-agent and low-friction, and centralize migration warnings in core entry skills plus `/doctor`.
+- R1-R10. Introduce YAML config under `repo_state_dir`, keep compatibility metadata minimal, and make `/ce-setup` the sole migration owner for legacy config.
+- R11-R16. Codify the standard config/storage contract section in `AGENTS.md`, keep it cross-agent and low-friction, and centralize migration warnings in core entry skills plus `/ce-doctor`.
 - R17-R23. Resolve durable CE state under `user_state_dir/projects/<project-slug>/`, preserve legacy todo reads, and move future durable writes there.
-- R24-R31. Expand `/doctor` and `/setup` around the new config/storage contract while preserving the registry-driven dependency flow and fresh scans.
+- R24-R31. Expand `/ce-doctor` and `/ce-setup` around the new config/storage contract while preserving the registry-driven dependency flow and fresh scans.
 - R32-R33. Remove the old config/storage contract from skills, tests, and converter surfaces without introducing provider-specific paths.
 
 ## Scope Boundaries
@@ -42,8 +42,8 @@ The current plugin still treats repo-local `.context/compound-engineering/...` a
 
 ### Relevant Code and Patterns
 
-- [plugins/compound-engineering/skills/setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/setup/SKILL.md) now focuses on dependency setup only; review-agent configuration is already gone on main.
-- [plugins/compound-engineering/skills/doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/SKILL.md) and [plugins/compound-engineering/skills/doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/scripts/check-health) already provide the shared diagnostic surface and script-first dependency checks.
+- [plugins/compound-engineering/skills/ce-setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-setup/SKILL.md) now focuses on dependency setup only; review-agent configuration is already gone on main.
+- [plugins/compound-engineering/skills/ce-doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/SKILL.md) and [plugins/compound-engineering/skills/ce-doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/scripts/check-health) already provide the shared diagnostic surface and script-first dependency checks.
 - [plugins/compound-engineering/skills/ce-brainstorm/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-brainstorm/SKILL.md), [plugins/compound-engineering/skills/ce-plan/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-plan/SKILL.md), and [plugins/compound-engineering/skills/ce-work/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-work/SKILL.md) are the concrete core entry skills that currently lack any shared migration-warning contract.
 - [plugins/compound-engineering/skills/todo-create/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/todo-create/SKILL.md), [plugins/compound-engineering/skills/todo-triage/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/todo-triage/SKILL.md), and [plugins/compound-engineering/skills/todo-resolve/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/todo-resolve/SKILL.md) encode the current todo path contract and legacy-drain semantics.
 - [plugins/compound-engineering/skills/ce-review/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-review/SKILL.md), [plugins/compound-engineering/skills/feature-video/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/feature-video/SKILL.md), and [plugins/compound-engineering/skills/deepen-plan/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/deepen-plan/SKILL.md) are the highest-signal per-run artifact consumers still hardcoding `.context/compound-engineering/...`.
@@ -66,14 +66,14 @@ The current plugin still treats repo-local `.context/compound-engineering/...` a
 - **Keep the state vocabulary to two named directories.** Use `user_state_dir` and `repo_state_dir`, and treat the per-project storage path as the derived subpath `<user_state_dir>/projects/<project-slug>/` rather than naming a third root.
 - **Standardize on header plus selective preamble.** Every skill carries one compact config/storage header so the vocabulary and fallback behavior stay consistent. Only independently invocable skills that diagnose config state or read/write durable CE state carry the full config-resolution preamble. Parent skills pass resolved values to spawned agents unless the child is itself independently invocable.
 - **Do not revive legacy review config.** `compound-engineering.local.md` is obsolete cleanup input only. Any surviving YAML config should store only real persisted CE state such as minimal compatibility metadata, not values that the runtime can derive deterministically.
-- **Keep migration state user-action oriented.** The runtime only needs to distinguish four practical states: no new config yet, legacy/conflicting config that needs migration, stale compatibility contract that requires rerunning `/setup`, and current config. Do not split “migration version” and “setup version” unless execution discovers a real user-visible difference in remediation.
-- **Make `/setup` the only writer of migration state.** `/doctor` diagnoses and entry skills warn, but only `/setup` reconciles legacy and new config.
-- **Treat path derivation as runtime contract, not persisted config.** Independently invocable config/storage consumers should derive `user_state_dir`, `repo_state_dir`, and the per-project path directly from the standard preamble. `/setup` should not pre-write the derived per-project path just to make later skills work.
+- **Keep migration state user-action oriented.** The runtime only needs to distinguish four practical states: no new config yet, legacy/conflicting config that needs migration, stale compatibility contract that requires rerunning `/ce-setup`, and current config. Do not split “migration version” and “setup version” unless execution discovers a real user-visible difference in remediation.
+- **Make `/ce-setup` the only writer of migration state.** `/ce-doctor` diagnoses and entry skills warn, but only `/ce-setup` reconciles legacy and new config.
+- **Treat path derivation as runtime contract, not persisted config.** Independently invocable config/storage consumers should derive `user_state_dir`, `repo_state_dir`, and the per-project path directly from the standard preamble. `/ce-setup` should not pre-write the derived per-project path just to make later skills work.
 - **Treat project identity as a shared-storage guarantee.** The per-project path must resolve from shared repo identity, not current checkout identity. Use `git rev-parse --path-format=absolute --git-common-dir` as the primary identity source so linked worktrees map to the same CE project. Derive the directory slug as `<sanitized-repo-name>-<short-hash>`, where the repo name comes from the basename of `${git_common_dir%/.git}` and the hash comes from the full absolute `git_common_dir`. If git identity cannot be resolved, execution may use a deterministic absolute-path fallback, but the worktree-safe path must be the default contract.
-- **Degrade instead of blocking on missing CE state.** Core entry skills should emit a short migration warning and point to `/setup`, but missing CE config or storage should not block the main workflow by default. Full-preamble skills should derive canonical paths when possible and otherwise degrade locally: do not write to legacy or guessed fallback paths, report what could not be persisted, and continue when the main task is still safe to complete.
+- **Degrade instead of blocking on missing CE state.** Core entry skills should emit a short migration warning and point to `/ce-setup`, but missing CE config or storage should not block the main workflow by default. Full-preamble skills should derive canonical paths when possible and otherwise degrade locally: do not write to legacy or guessed fallback paths, report what could not be persisted, and continue when the main task is still safe to complete.
 - **Preserve todo migration semantics, not per-run artifact history.** Todos retain dual-read compatibility during the drain period; per-run artifact directories only change future writes.
 - **Keep one active planning chain.** Current operational surfaces should adopt the new contract directly, and earlier setup/todo requirements and plan docs should be folded into this plan rather than left as competing active guidance.
-- **Use contract tests for prompt surfaces that now matter operationally.** Existing converter and review contract tests already validate prompt text; add setup/doctor or storage-focused contract coverage rather than relying only on manual inspection.
+- **Use contract tests for prompt surfaces that now matter operationally.** Existing converter and review contract tests already validate prompt text; add setup/ce-doctor or storage-focused contract coverage rather than relying only on manual inspection.
 
 ## Open Questions
 
@@ -82,7 +82,7 @@ The current plugin still treats repo-local `.context/compound-engineering/...` a
 - **Should this plan assume review-agent config still exists?** No. Main has already removed setup-managed reviewer selection, so this refactor must not recreate it.
 - **Should the storage vocabulary keep a named project root variable?** No. Use `user_state_dir` and `repo_state_dir`; refer to `<user_state_dir>/projects/<project-slug>/` directly.
 - **How is the per-project slug derived?** Use the shared git identity from `git rev-parse --path-format=absolute --git-common-dir`, then derive a human-friendly directory-safe slug as `<sanitized-repo-name>-<short-hash>`. This is intentionally stable across linked worktrees of the same repo and intentionally different across separate clones.
-- **Which skills should carry migration warnings?** The concrete warning surfaces are [plugins/compound-engineering/skills/setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/setup/SKILL.md), [plugins/compound-engineering/skills/doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/SKILL.md), [plugins/compound-engineering/skills/ce-brainstorm/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-brainstorm/SKILL.md), [plugins/compound-engineering/skills/ce-plan/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-plan/SKILL.md), [plugins/compound-engineering/skills/ce-work/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-work/SKILL.md), and [plugins/compound-engineering/skills/ce-review/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-review/SKILL.md). Non-core skills should inherit the contract only when they are independently invocable and actually need config or durable storage.
+- **Which skills should carry migration warnings?** The concrete warning surfaces are [plugins/compound-engineering/skills/ce-setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-setup/SKILL.md), [plugins/compound-engineering/skills/ce-doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/SKILL.md), [plugins/compound-engineering/skills/ce-brainstorm/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-brainstorm/SKILL.md), [plugins/compound-engineering/skills/ce-plan/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-plan/SKILL.md), [plugins/compound-engineering/skills/ce-work/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-work/SKILL.md), and [plugins/compound-engineering/skills/ce-review/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-review/SKILL.md). Non-core skills should inherit the contract only when they are independently invocable and actually need config or durable storage.
 - **Should every old reference be rewritten?** No. Active docs and tests should adopt the new contract. Historical requirements/plans should be preserved for traceability and only annotated when they could plausibly be mistaken for current runtime guidance.
 - **Is external research needed?** No. The repo already contains the relevant prompt, converter, and lifecycle patterns.
 
@@ -115,7 +115,7 @@ Resolution flow:
 2. Resolve user_state_dir from the documented fallback chain
 3. Derive the per-project path under user_state_dir/projects/<project-slug>/
 4. Read config layers only when they exist and the skill needs persisted CE values
-5. If compatibility or migration state is stale, route the user to /setup
+5. If compatibility or migration state is stale, route the user to /ce-setup
 
 Project slug:
 - identity source: `git rev-parse --path-format=absolute --git-common-dir`
@@ -124,12 +124,12 @@ Project slug:
 - format: `<sanitized-repo-name>-<short-hash>`
 
 Action model:
-- no repo-local CE file yet -> warn only when relevant, `/doctor` explains current state, `/setup` initializes or refreshes if needed
-- legacy `compound-engineering.local.md` present -> warn in core entry skills, `/doctor` explains that it is obsolete, `/setup` deletes it after explanation
-- new config below required contract -> warn in core entry skills, `/doctor` explains rerun requirement, `/setup` refreshes
+- no repo-local CE file yet -> warn only when relevant, `/ce-doctor` explains current state, `/ce-setup` initializes or refreshes if needed
+- legacy `compound-engineering.local.md` present -> warn in core entry skills, `/ce-doctor` explains that it is obsolete, `/ce-setup` deletes it after explanation
+- new config below required contract -> warn in core entry skills, `/ce-doctor` explains rerun requirement, `/ce-setup` refreshes
 - current config -> proceed with no migration warning
 - canonical storage can be derived but CE state is incomplete -> proceed using canonical paths and warn when relevant
-- canonical storage cannot be derived safely -> do not write to legacy or guessed fallback paths; degrade locally, report what could not be persisted, and direct the user to `/setup`
+- canonical storage cannot be derived safely -> do not write to legacy or guessed fallback paths; degrade locally, report what could not be persisted, and direct the user to `/ce-setup`
 ```
 
 ## Implementation Units
@@ -152,13 +152,13 @@ Action model:
   - compact header required in every skill
   - full config-resolution preamble required only in independently invocable config/storage consumers
 - Clarify that `repo_state_dir` is for repo-local CE config, `user_state_dir` is for user-level CE state, and the per-project path derives from the latter.
-- Define the compact header contents explicitly: state vocabulary, whether the skill resolves config itself or expects caller-passed values, and the rule to warn or route to `/setup` when required config/storage cannot be resolved safely.
+- Define the compact header contents explicitly: state vocabulary, whether the skill resolves config itself or expects caller-passed values, and the rule to warn or route to `/ce-setup` when required config/storage cannot be resolved safely.
 - Define the full preamble trigger explicitly: use it only in independently invocable skills that diagnose migration/config state or that read/write durable CE-owned state.
 - Define the full preamble contents explicitly:
   - prefer caller-passed resolved values
   - resolve `repo_state_dir`, `user_state_dir`, and the per-project path deterministically
   - read config layers only when needed and when present
-  - warn and route to `/setup` when migration or rerun is needed
+  - warn and route to `/ce-setup` when migration or rerun is needed
   - do not write to legacy or guessed fallback paths when canonical storage cannot be derived
   - degrade locally and report what could not be persisted instead of blocking the main task by default
 - Keep the guidance capability-first and cross-platform, following current plugin AGENTS conventions.
@@ -178,55 +178,55 @@ Action model:
 - The plan no longer leaves “header vs full preamble” as an implementation-time choice.
 - README no longer implies that CE runtime state belongs in repo-local `.context/compound-engineering/...`.
 
-- [ ] **Unit 2: Move `/setup` and `/doctor` to the new config and migration contract**
+- [ ] **Unit 2: Move `/ce-setup` and `/ce-doctor` to the new config and migration contract**
 
-**Goal:** Make `/setup` own obsolete-file cleanup plus any surviving compatibility migration work, make `/doctor` diagnose compatibility, storage state, and gitignore safety in addition to dependencies, and give core entry skills one consistent migration-warning contract.
+**Goal:** Make `/ce-setup` own obsolete-file cleanup plus any surviving compatibility migration work, make `/ce-doctor` diagnose compatibility, storage state, and gitignore safety in addition to dependencies, and give core entry skills one consistent migration-warning contract.
 
 **Requirements:** R6-R10, R15-R16, R20, R24-R31
 
 **Dependencies:** Unit 1
 
 **Files:**
-- Modify: [plugins/compound-engineering/skills/setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/setup/SKILL.md)
-- Modify: [plugins/compound-engineering/skills/doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/SKILL.md)
+- Modify: [plugins/compound-engineering/skills/ce-setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-setup/SKILL.md)
+- Modify: [plugins/compound-engineering/skills/ce-doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/SKILL.md)
 - Modify: [plugins/compound-engineering/skills/ce-brainstorm/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-brainstorm/SKILL.md)
 - Modify: [plugins/compound-engineering/skills/ce-plan/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-plan/SKILL.md)
 - Modify: [plugins/compound-engineering/skills/ce-work/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-work/SKILL.md)
 - Modify: [plugins/compound-engineering/skills/ce-review/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-review/SKILL.md)
-- Modify: [plugins/compound-engineering/skills/doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/scripts/check-health)
-- Modify: [plugins/compound-engineering/skills/doctor/references/dependency-registry.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/references/dependency-registry.md)
-- Create: [tests/setup-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/setup-skill-contract.test.ts)
-- Create: [tests/doctor-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/doctor-skill-contract.test.ts)
+- Modify: [plugins/compound-engineering/skills/ce-doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/scripts/check-health)
+- Modify: [plugins/compound-engineering/skills/ce-doctor/references/dependency-registry.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/references/dependency-registry.md)
+- Create: [tests/ce-setup-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/ce-setup-skill-contract.test.ts)
+- Create: [tests/ce-doctor-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/ce-doctor-skill-contract.test.ts)
 - Create: [tests/entry-skill-config-warning-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/entry-skill-config-warning-contract.test.ts)
 
 **Approach:**
 - Replace the current “dependency-only setup” language with a flow that also removes obsolete `compound-engineering.local.md` files after explaining why they are no longer used, and writes machine-local config only if the surviving CE contract truly requires persisted state.
 - Extend the doctor script and wrapper skill to report resolved config layers when present, the derived per-project storage path, whether a legacy file still needs cleanup, and repo-local gitignore safety for `.compound-engineering/config.local.yaml` when that file exists or is expected.
-- Make `/setup` the remediation path for gitignore safety as well as diagnostics: if `.compound-engineering/config.local.yaml` should exist and is not ignored, `/setup` should explain why the file is machine-local and offer to add the `.gitignore` entry.
-- Add a short shared warning contract to the core entry skills so they all route users toward `/setup` from the same states, while full-preamble skills degrade locally rather than blocking or writing to stale paths when canonical CE storage cannot be resolved.
+- Make `/ce-setup` the remediation path for gitignore safety as well as diagnostics: if `.compound-engineering/config.local.yaml` should exist and is not ignored, `/ce-setup` should explain why the file is machine-local and offer to add the `.gitignore` entry.
+- Add a short shared warning contract to the core entry skills so they all route users toward `/ce-setup` from the same states, while full-preamble skills degrade locally rather than blocking or writing to stale paths when canonical CE storage cannot be resolved.
 - Keep dependency detection registry-driven and MCP-aware, but update the output model so dependency gaps and config/storage gaps share one diagnostic report.
 
 **Patterns to follow:**
-- [plugins/compound-engineering/skills/doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/SKILL.md)
-- [plugins/compound-engineering/skills/doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/scripts/check-health)
+- [plugins/compound-engineering/skills/ce-doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/SKILL.md)
+- [plugins/compound-engineering/skills/ce-doctor/scripts/check-health](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/scripts/check-health)
 - [tests/review-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/review-skill-contract.test.ts)
 
 **Test scenarios:**
-- Legacy `compound-engineering.local.md` exists; `/doctor` reports obsolete-file cleanup needed and `/setup` becomes the next action.
-- Legacy file and new repo-local CE files both exist; `/doctor` reports that the legacy file is obsolete and `/setup` deletes it without attempting a semantic merge.
-- New config exists but compatibility metadata is stale; `/doctor` asks for rerun without relying on raw plugin semver.
-- `.compound-engineering/config.local.yaml` is required but not gitignored; `/doctor` reports the issue and `/setup` offers to add the `.gitignore` entry.
+- Legacy `compound-engineering.local.md` exists; `/ce-doctor` reports obsolete-file cleanup needed and `/ce-setup` becomes the next action.
+- Legacy file and new repo-local CE files both exist; `/ce-doctor` reports that the legacy file is obsolete and `/ce-setup` deletes it without attempting a semantic merge.
+- New config exists but compatibility metadata is stale; `/ce-doctor` asks for rerun without relying on raw plugin semver.
+- `.compound-engineering/config.local.yaml` is required but not gitignored; `/ce-doctor` reports the issue and `/ce-setup` offers to add the `.gitignore` entry.
 - `ce:brainstorm` and `ce:plan` warn and continue because they can still read or write durable docs safely without project-state writes.
 - `ce:work` and `ce:review` share the same warning vocabulary, derive canonical paths when possible, and otherwise report degraded persistence instead of writing to legacy paths.
 - Dependency checks still distinguish CLI-present, MCP-present, and missing states.
 
 **Verification:**
-- `/setup` prompt no longer implies a legacy markdown config target.
-- `/doctor` output contract covers config/storage state in addition to dependency health.
-- `/doctor` checks `.compound-engineering/config.local.yaml` gitignore safety rather than the old repo-local storage paths.
-- `/setup` can remediate `.compound-engineering/config.local.yaml` gitignore safety instead of only surfacing the problem.
+- `/ce-setup` prompt no longer implies a legacy markdown config target.
+- `/ce-doctor` output contract covers config/storage state in addition to dependency health.
+- `/ce-doctor` checks `.compound-engineering/config.local.yaml` gitignore safety rather than the old repo-local storage paths.
+- `/ce-setup` can remediate `.compound-engineering/config.local.yaml` gitignore safety instead of only surfacing the problem.
 - Core entry skills no longer invent their own migration wording or remediation instructions.
-- Canonical per-project storage is derivable without `/setup` having to pre-write that path into config.
+- Canonical per-project storage is derivable without `/ce-setup` having to pre-write that path into config.
 - New contract tests pin the migration/reporting language so future edits do not regress it.
 
 - [ ] **Unit 3: Move the todo system to per-project durable storage with legacy reads**
@@ -337,10 +337,10 @@ Action model:
 
 ## System-Wide Impact
 
-- **Interaction graph:** `/setup` becomes the only migration writer; `/doctor` and core workflow skills become migration-state readers; todo/review/media/planning skills become consumers of the derived per-project storage path.
+- **Interaction graph:** `/ce-setup` becomes the only migration writer; `/ce-doctor` and core workflow skills become migration-state readers; todo/review/media/planning skills become consumers of the derived per-project storage path.
 - **Error propagation:** Incorrect compatibility metadata or repo-identity resolution can cause stale-path fallbacks, false “rerun setup” warnings, or storage fragmentation across worktrees.
 - **State lifecycle risks:** Todo ID collisions, stale obsolete-file cleanup behavior, and accidental commits of `.compound-engineering/config.local.yaml` are the main durable-state hazards.
-- **User-experience risks:** If warning wording drifts between entry skills, users will receive contradictory guidance about whether they can proceed or must rerun `/setup`.
+- **User-experience risks:** If warning wording drifts between entry skills, users will receive contradictory guidance about whether they can proceed or must rerun `/ce-setup`.
 - **API surface parity:** Converter outputs and copied skills must continue to make sense across Claude Code, Codex, Copilot, PI, and other pass-through targets without assuming one platform’s shell/tool naming.
 - **Integration coverage:** Unit tests alone will not prove prompt-contract correctness; contract tests plus the converter suite need to cover the text surfaces that now encode the runtime model.
 
@@ -354,7 +354,7 @@ Action model:
 
 ## Documentation / Operational Notes
 
-- Update [plugins/compound-engineering/README.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/README.md) when setup/doctor/storage behavior changes.
+- Update [plugins/compound-engineering/README.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/README.md) when setup/ce-doctor/storage behavior changes.
 - Run `bun test` because the converter and contract-test surfaces are directly affected.
 - Run `bun run release:validate` because skill descriptions and plugin docs are being updated.
 - Do not hand-edit release-owned versions or changelogs.
@@ -362,6 +362,6 @@ Action model:
 ## Sources & References
 
 - **Origin document:** [docs/brainstorms/2026-03-25-config-storage-redesign-requirements.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/docs/brainstorms/2026-03-25-config-storage-redesign-requirements.md)
-- Related code: [plugins/compound-engineering/skills/doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/doctor/SKILL.md)
-- Related code: [plugins/compound-engineering/skills/setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/setup/SKILL.md)
+- Related code: [plugins/compound-engineering/skills/ce-doctor/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-doctor/SKILL.md)
+- Related code: [plugins/compound-engineering/skills/ce-setup/SKILL.md](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/plugins/compound-engineering/skills/ce-setup/SKILL.md)
 - Related tests: [tests/review-skill-contract.test.ts](/Users/tmchow/conductor/workspaces/compound-engineering-plugin/freetown-v1/tests/review-skill-contract.test.ts)

@@ -1,5 +1,5 @@
 ---
-name: setup
+name: ce-setup
 description: Configure compound-engineering environment. Checks dependencies, cleans obsolete repo-local CE config, offers guided installation, and helps resolve environment issues. Review agent selection is handled automatically by ce:review.
 disable-model-invocation: true
 ---
@@ -16,7 +16,7 @@ Interactive setup for compound-engineering — checks environment dependencies, 
 
 ### Step D1: Run Diagnostics
 
-Load the `doctor` skill and run it to produce an environment health report. This checks CLI dependencies, MCP servers, environment variables, plugin version, obsolete `compound-engineering.local.md`, and `.compound-engineering/config.local.yaml` gitignore guidance.
+Load the `ce-doctor` skill and run it to produce an environment health report. This checks CLI dependencies, MCP servers, environment variables, plugin version, obsolete `compound-engineering.local.md`, and `.compound-engineering/config.local.yaml` gitignore guidance.
 
 Display the diagnostic report to the user.
 
