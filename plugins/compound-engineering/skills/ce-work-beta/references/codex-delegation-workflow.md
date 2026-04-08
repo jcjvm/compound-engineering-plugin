@@ -158,6 +158,9 @@ Report your result via the --output-schema mechanism. Fill in every field:
 - issues: array of strings describing any problems, gaps, or out-of-scope
   work discovered
 - summary: one-paragraph description of what was done
+- verification_summary: what you ran to verify (command and outcome).
+  Example: "Ran `bun test` -- 14 tests passed, 0 failed."
+  If no verification was possible, say why.
 </output_contract>
 ```
 
@@ -172,9 +175,10 @@ Write the result schema to `.context/compound-engineering/codex-delegation/<run-
     "status": { "enum": ["completed", "partial", "failed"] },
     "files_modified": { "type": "array", "items": { "type": "string" } },
     "issues": { "type": "array", "items": { "type": "string" } },
-    "summary": { "type": "string" }
+    "summary": { "type": "string" },
+    "verification_summary": { "type": "string" }
   },
-  "required": ["status", "files_modified", "issues", "summary"],
+  "required": ["status", "files_modified", "issues", "summary", "verification_summary"],
   "additionalProperties": false
 }
 ```
@@ -250,6 +254,19 @@ If the output is "Waiting for Codex...", issue the same polling command again as
 | 3 | Exit code 0, `status: "failed"` | Task failure | Rollback to HEAD. Increment `consecutive_failures`. |
 | 4 | Exit code 0, `status: "partial"` | Partial success | Keep the diff. Complete remaining work locally, verify, and commit. Increment `consecutive_failures`. |
 | 5 | Exit code 0, `status: "completed"` | Success | Commit changes. Reset `consecutive_failures` to 0. |
+
+**Result handoff — surface to user:** After reading the result JSON and before committing or rolling back, display a summary so the user sees what happened. Format:
+
+> **Codex batch <batch-num> — <classification>**
+> <summary from result JSON>
+>
+> **Files:** <comma-separated list from files_modified>
+> **Verification:** <verification_summary from result JSON>
+> **Issues:** <issues list, or "None">
+
+On failure or partial results, include the classification reason (e.g., "status: failed", "result JSON missing") so the user understands why the orchestrator is rolling back or completing locally.
+
+Keep this brief — the goal is transparency, not a wall of text. One short block per batch.
 
 **Rollback procedure:**
 
