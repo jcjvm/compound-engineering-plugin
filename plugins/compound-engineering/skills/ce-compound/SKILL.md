@@ -162,17 +162,17 @@ Launch research subagents. Each returns text data to the orchestrator.
    - Searches prior Claude Code, Codex, and Cursor sessions for the same project to find related investigation context
    - Correlates sessions by git branch (Claude Code) and working directory (Codex, Cursor)
    - In the dispatch prompt, pass:
-     - The current problem description, git branch, and working directory
-     - The output format the agent should use:
+     - A specific description of the problem being documented — not a generic topic, but the concrete issue (error messages, module names, what broke and how it was fixed). This is what the agent filters its findings against.
+     - The current git branch and working directory
+     - The instruction: "Only surface findings from prior sessions that are directly relevant to this specific problem. Ignore unrelated work from the same sessions or branches."
+     - The output format:
 
        ```
        Structure your response with these sections (omit any with no findings):
-       - Investigation Timeline: chronological arc across sessions
-       - What Didn't Work: failed approaches and why they were abandoned
-       - Key Decisions: choices made and their rationale
-       - User Corrections: moments the user redirected the approach
-       - Files and Components Touched: blast radius across sessions
-       - Cross-Session Patterns: observations that only emerge across sessions
+       - What was tried before: prior approaches to this specific problem
+       - What didn't work: failed attempts at this problem from prior sessions
+       - Key decisions: choices made about this problem and their rationale
+       - Related context: anything else from prior sessions that directly informs this problem's documentation
        ```
    - Omit the `mode` parameter so the user's configured permission settings apply
    - Dispatch on the mid-tier model (e.g., `model: "sonnet"` in Claude Code) — the synthesis feeds into compound assembly and doesn't need frontier reasoning
