@@ -49,7 +49,7 @@ fi
 If `inside_sandbox` is true, delegation would recurse or fail.
 
 - If `delegation_source` is `argument`: emit "Already inside Codex sandbox -- using standard mode." and set `delegation_active` to false.
-- If `delegation_source` is `local.md` or `default`: set `delegation_active` to false silently.
+- If `delegation_source` is `config` or `default`: set `delegation_active` to false silently.
 
 **2. Availability Check**
 
@@ -61,7 +61,7 @@ If the Codex CLI is not on PATH: emit "Codex CLI not found -- using standard mod
 
 **3. Consent Flow**
 
-If `consent_granted` is not true (from local.md `work_delegate_consent`):
+If `consent_granted` is not true (from config `work_delegate_consent`):
 
 Present a one-time consent warning using the platform's blocking question tool (AskUserQuestion in Claude Code). The consent warning explains:
 - Delegation sends implementation units to `codex exec` as a structured prompt
@@ -71,16 +71,16 @@ Present a one-time consent warning using the platform's blocking question tool (
 Present the sandbox mode choice: (1) yolo (recommended), (2) full-auto.
 
 On acceptance:
-- Write `work_delegate_consent: true` and `work_delegate_sandbox: <chosen-mode>` to `.claude/compound-engineering.local.md` YAML frontmatter
-- To write local.md: (1) if file does not exist, create it with YAML frontmatter wrapper; (2) if file exists with valid frontmatter, merge new keys preserving existing keys; (3) if file exists without frontmatter or with malformed frontmatter, prepend a valid frontmatter block and preserve existing body content below the closing `---`
+- Write `work_delegate_consent: true` and `work_delegate_sandbox: <chosen-mode>` to `.compound-engineering/config.local.yaml`
+- To write: (1) if file or directory does not exist, create `.compound-engineering/` and write the YAML file; (2) if file exists, merge new keys preserving existing keys
 - Update `consent_granted` and `sandbox_mode` in the resolved state
 
 On decline:
 - Ask whether to disable delegation entirely for this project
-- If yes: write `work_delegate: false` to local.md, set `delegation_active` to false, proceed in standard mode
+- If yes: write `work_delegate: false` to `.compound-engineering/config.local.yaml`, set `delegation_active` to false, proceed in standard mode
 - If no: set `delegation_active` to false for this invocation only, proceed in standard mode
 
-**Headless consent:** If running in a headless or non-interactive context, delegation proceeds only if `work_delegate_consent` is already `true` in local.md. If consent is not recorded, set `delegation_active` to false silently.
+**Headless consent:** If running in a headless or non-interactive context, delegation proceeds only if `work_delegate_consent` is already `true` in the config file. If consent is not recorded, set `delegation_active` to false silently.
 
 ## Batching
 

@@ -109,7 +109,7 @@ describe("ce:work-beta codex delegation contract", () => {
     // Resolution chain present
     expect(content).toContain("### Settings Resolution Chain")
     expect(content).toContain("work_delegate")
-    expect(content).toContain("compound-engineering.local.md")
+    expect(content).toContain("config.local.yaml")
   })
 
   test("argument-hint includes delegate:codex for discoverability", async () => {

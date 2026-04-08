@@ -26,7 +26,7 @@ Parse `$ARGUMENTS` for the following optional tokens. Strip each recognized toke
 | Token | Example | Effect |
 |-------|---------|--------|
 | `delegate:codex` | `delegate:codex` | Activate Codex delegation mode for plan execution |
-| `delegate:local` | `delegate:local` | Deactivate delegation even if enabled in local.md |
+| `delegate:local` | `delegate:local` | Deactivate delegation even if enabled in config |
 
 All tokens are optional. When absent, fall back to the resolution chain below.
 
@@ -39,12 +39,12 @@ All tokens are optional. When absent, fall back to the resolution chain below.
 After extracting tokens from arguments, resolve the delegation state using this precedence chain:
 
 1. **Argument flag** -- `delegate:codex` or `delegate:local` from the current invocation (highest priority)
-2. **local.md setting** -- Read `.claude/compound-engineering.local.md` and extract `work_delegate` from YAML frontmatter. Value `codex` activates delegation; `false` deactivates.
+2. **Config file** -- Read `.compound-engineering/config.local.yaml` in the repo root. Extract `work_delegate` from the YAML keys. Value `codex` activates delegation; `false` deactivates.
 3. **Hard default** -- `false` (delegation off)
 
-To read local.md: open the file, extract content between the opening and closing `---` delimiters (YAML frontmatter), and interpret the keys. If the file is missing, empty, has malformed frontmatter, or any setting has an unrecognized value, fall through to the hard default for that setting.
+To read the config file: open `.compound-engineering/config.local.yaml` and parse it as YAML. If the file is missing, empty, malformed, or any setting has an unrecognized value, fall through to the hard default for that setting.
 
-Also read from local.md when present:
+Also read from the config file when present:
 - `work_delegate_consent` -- `true` or default `false`
 - `work_delegate_sandbox` -- `yolo` (default) or `full-auto`
 - `work_delegate_decision` -- `auto` (default) or `ask`
@@ -53,11 +53,11 @@ Also read from local.md when present:
 
 Store the resolved state for downstream consumption:
 - `delegation_active` -- boolean, whether delegation mode is on
-- `delegation_source` -- `argument` or `local.md` or `default` -- how delegation was resolved (used by environment guard to decide notification verbosity)
-- `sandbox_mode` -- `yolo` or `full-auto` (from local.md or default `yolo`)
-- `consent_granted` -- boolean (from local.md `work_delegate_consent`)
-- `delegate_model` -- string (from local.md or default `gpt-5.4`)
-- `delegate_effort` -- string (from local.md or default `high`)
+- `delegation_source` -- `argument` or `config` or `default` -- how delegation was resolved (used by environment guard to decide notification verbosity)
+- `sandbox_mode` -- `yolo` or `full-auto` (from config or default `yolo`)
+- `consent_granted` -- boolean (from config `work_delegate_consent`)
+- `delegate_model` -- string (from config or default `gpt-5.4`)
+- `delegate_effort` -- string (from config or default `high`)
 
 ---
 
