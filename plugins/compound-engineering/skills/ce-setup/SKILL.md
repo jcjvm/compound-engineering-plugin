@@ -46,20 +46,17 @@ After the diagnostic report, check whether:
 - `compound-engineering.local.md` is present and needs cleanup
 - `.compound-engineering/config.local.yaml` does not exist or is not safely gitignored
 
-If everything is installed and no repo-local issues were flagged, display:
+If everything is installed, no repo-local cleanup is needed, and `.compound-engineering/config.local.yaml` already exists and is gitignored, display:
 
 ```
-Environment healthy -- all dependencies found.
-Review agent selection is automatic in ce:review.
-Run /ce-update to check if a newer plugin version is available.
+Everything looks good -- all tools installed, config in place.
+Run /ce-setup anytime to re-check dependencies, or /ce-update to grab the latest plugin version.
 Setup complete.
 ```
 
 Stop here.
 
-If repo-local CE cleanup is needed, handle it before dependency installation.
-
-If any installable dependencies are missing, proceed to Phase 2.
+Otherwise proceed to Phase 2 to resolve any issues. Handle repo-local cleanup (Step 4) first, then config bootstrapping (Step 5), then missing dependencies (Step 6).
 
 ## Phase 2: Fix
 
@@ -72,12 +69,12 @@ If `compound-engineering.local.md` exists, explain that it is obsolete because r
 If `.compound-engineering/config.local.yaml` does not exist in the current repo, ask whether to create it:
 
 ```
-Create .compound-engineering/config.local.yaml with default settings?
-This file stores machine-local Compound Engineering options (e.g., Codex delegation).
-All settings are commented out by default.
+Set up a local config file for this project?
+This saves your Compound Engineering preferences (like which tools to use and how workflows behave).
+Everything starts commented out -- you only enable what you need.
 
-1. Yes
-2. No
+1. Yes, create it (Recommended)
+2. No thanks
 ```
 
 If the user approves:
@@ -136,12 +133,9 @@ For each selected dependency, in order:
 Display a brief summary:
 
 ```
-Dependencies configured.
+Setup complete.
   Installed: agent-browser, gh, jq
   Skipped:   rtk
 
-Review agent selection is automatic in ce:review.
-Project-specific review context belongs in CLAUDE.md or AGENTS.md.
-Run /ce-update to check if a newer plugin version is available.
-Run /ce-setup anytime to re-check.
+Run /ce-setup anytime to re-check dependencies, or /ce-update to grab the latest plugin version.
 ```
