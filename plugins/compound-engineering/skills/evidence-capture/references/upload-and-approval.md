@@ -29,8 +29,11 @@ The script uploads to catbox.moe, validates the response starts with `https://`,
 ```bash
 mkdir -p docs/evidence
 cp [ARTIFACT_PATH] docs/evidence/[ARTIFACT_FILE_NAME]
+git add docs/evidence/[ARTIFACT_FILE_NAME]
+git commit -m "Add evidence for PR"
+git push
 ```
-Use the relative path `docs/evidence/[ARTIFACT_FILE_NAME]` as the image URL in the PR description. GitHub renders images committed to the branch.
+Use the relative path `docs/evidence/[ARTIFACT_FILE_NAME]` as the image URL in the PR description. GitHub renders images committed to the branch once pushed.
 
 For multiple files (static screenshots tier), upload each file separately.
 
