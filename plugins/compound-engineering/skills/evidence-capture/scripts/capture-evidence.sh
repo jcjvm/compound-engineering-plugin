@@ -58,13 +58,13 @@ cmd_stitch() {
   [[ -n "$output" ]] || die "Usage: stitch [--duration N] output.gif frame1.png [frame2.png ...]"
   [[ ${#frames[@]} -gt 0 ]] || die "No input frames provided"
 
-  check_tool ffmpeg "brew install ffmpeg"
-  check_tool ffprobe "brew install ffmpeg"
-
-  # Validate all frames exist
+  # Validate all frames exist before checking tools
   for f in "${frames[@]}"; do
     [[ -f "$f" ]] || die "Frame not found: $f"
   done
+
+  check_tool ffmpeg "brew install ffmpeg"
+  check_tool ffprobe "brew install ffmpeg"
 
   echo "Stitching ${#frames[@]} frames into GIF (${duration}s per frame)..."
 
