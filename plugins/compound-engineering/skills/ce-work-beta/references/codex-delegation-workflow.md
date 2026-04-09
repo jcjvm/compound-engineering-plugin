@@ -74,13 +74,13 @@ Present a one-time consent warning using the platform's blocking question tool (
 Present the sandbox mode choice: (1) yolo (recommended), (2) full-auto.
 
 On acceptance:
-- Write `work_delegate_consent: true` and `work_delegate_sandbox: <chosen-mode>` to `.compound-engineering/config.local.yaml`
-- To write: (1) if file or directory does not exist, create `.compound-engineering/` and write the YAML file; (2) if file exists, merge new keys preserving existing keys
+- Resolve the repo root: `git rev-parse --show-toplevel`. Write `work_delegate_consent: true` and `work_delegate_sandbox: <chosen-mode>` to `<repo-root>/.compound-engineering/config.local.yaml`
+- To write: (1) if file or directory does not exist, create `<repo-root>/.compound-engineering/` and write the YAML file; (2) if file exists, merge new keys preserving existing keys
 - Update `consent_granted` and `sandbox_mode` in the resolved state
 
 On decline:
 - Ask whether to disable delegation entirely for this project
-- If yes: write `work_delegate: false` to `.compound-engineering/config.local.yaml`. To write: (1) if file or directory does not exist, create `.compound-engineering/` and write the YAML file; (2) if file exists, merge new keys preserving existing keys. Set `delegation_active` to false, proceed in standard mode
+- If yes: write `work_delegate: false` to `<repo-root>/.compound-engineering/config.local.yaml` (using the same repo root resolved above). To write: (1) if file or directory does not exist, create `<repo-root>/.compound-engineering/` and write the YAML file; (2) if file exists, merge new keys preserving existing keys. Set `delegation_active` to false, proceed in standard mode
 - If no: set `delegation_active` to false for this invocation only, proceed in standard mode
 
 **Headless consent:** If running in a headless or non-interactive context, delegation proceeds only if `work_delegate_consent` is already `true` in the config file. If consent is not recorded, set `delegation_active` to false silently.
