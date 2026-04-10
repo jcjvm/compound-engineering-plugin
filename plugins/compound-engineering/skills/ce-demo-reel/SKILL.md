@@ -53,13 +53,13 @@ Use the workspace where the feature was built. Do not reinstall from scratch. If
 
 ## Step 2: Detect Project Type
 
-Run the detection script:
+Use the capture target from Step 0 to decide which directory to classify. If the diff touches a specific subdirectory with its own package manifest (e.g., `packages/cli/`, `apps/web/`), pass that as the root. Otherwise use the repo root.
 
 ```bash
-python3 scripts/capture-demo.py detect --repo-root "$(git rev-parse --show-toplevel)"
+python3 scripts/capture-demo.py detect --repo-root [TARGET_DIR]
 ```
 
-This outputs JSON with `type` and `reason`. Store the `type` value (`web-app`, `cli-tool`, `library`, `desktop-app`, or `text-only`).
+This outputs JSON with `type` and `reason`. The result is a signal, not a gate. If the agent's understanding from Step 0 contradicts the script's classification (e.g., the diff clearly changes CLI behavior but the repo root classifies as `web-app` because of a sibling Next.js app), the agent's judgment wins.
 
 ## Step 3: Assess Change Type
 
