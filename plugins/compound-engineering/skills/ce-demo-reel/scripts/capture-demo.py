@@ -334,7 +334,7 @@ def _stitch_frames(output, frames, duration=3.0):
             run_cmd([
                 "ffmpeg", "-y", "-v", "error", "-i", f,
                 "-vf", f"scale={max_w}:{max_h}:force_original_aspect_ratio=decrease,"
-                       f"pad={max_w}:{max_h}:(ow-iw)/2:0:color=black",
+                       f"pad={max_w}:{max_h}:(ow-iw)/2:0:color=#0d1117",
                 out,
             ])
             normalized.append(out)
@@ -427,6 +427,9 @@ def cmd_screenshot_reel(args):
                 "-l", args.lang,
                 "--pad-horiz", "20",
                 "--pad-vert", "20",
+                "--no-line-number",
+                "--no-round-corner",
+                "--background", args.background,
             ])
             if result.returncode != 0 or not Path(out_png).exists():
                 die(f"silicon failed to render {text_file}")
@@ -596,6 +599,7 @@ Commands:
     p_reel.add_argument("--duration", type=float, default=2.5, help="Seconds per frame")
     p_reel.add_argument("--lang", default="bash", help="Language for syntax highlighting")
     p_reel.add_argument("--theme", default="Dracula", help="Silicon theme")
+    p_reel.add_argument("--background", default="#0d1117", help="Background color for frame border")
     p_reel.add_argument("--text", nargs="+", required=True, help="Text files (one per frame)")
 
     # terminal-recording
