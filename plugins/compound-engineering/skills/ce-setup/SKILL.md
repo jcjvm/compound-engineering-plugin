@@ -85,9 +85,10 @@ Everything starts commented out -- you only enable what you need.
 
 If the user approves:
 
-1. Create the `.compound-engineering/` directory if it does not exist.
-2. Copy the template from `references/config-template.yaml` to `.compound-engineering/config.local.yaml`.
-3. If `.compound-engineering/config.local.yaml` is not already covered by `.gitignore`, offer to add the entry:
+1. Resolve the repository root (`git rev-parse --show-toplevel`). All paths below are relative to the repo root, not the current working directory.
+2. Create the `.compound-engineering/` directory at the repo root if it does not exist.
+3. Copy the template from `references/config-template.yaml` to `<repo-root>/.compound-engineering/config.local.yaml`.
+4. If `.compound-engineering/config.local.yaml` is not already covered by `.gitignore`, offer to add the entry:
 
 ```text
 .compound-engineering/config.local.yaml
@@ -124,7 +125,7 @@ For each selected dependency, in order:
 
    ```
    Install agent-browser?
-   Command: npm install -g agent-browser && agent-browser install
+   Command: npm install -g agent-browser && agent-browser install && npx skills add vercel-labs/agent-browser
 
    1. Run this command
    2. Skip - I'll install it manually

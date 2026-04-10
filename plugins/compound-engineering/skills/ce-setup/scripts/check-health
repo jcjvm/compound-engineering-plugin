@@ -12,7 +12,7 @@ set -o pipefail
 # To add a dependency: add a line here. No other changes needed.
 
 deps=(
-  "agent-browser|recommended|npm install -g agent-browser && agent-browser install|https://github.com/vercel-labs/agent-browser"
+  "agent-browser|recommended|npm install -g agent-browser && agent-browser install && npx skills add vercel-labs/agent-browser|https://github.com/vercel-labs/agent-browser"
   "gh|recommended|brew install gh|https://cli.github.com"
   "jq|recommended|brew install jq|https://jqlang.github.io/jq/"
   "vhs|optional|brew install vhs|https://github.com/charmbracelet/vhs"
@@ -28,7 +28,7 @@ deps=(
 plugin_version=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --version) plugin_version="$2"; shift 2 ;;
+    --version) [ -n "$2" ] && plugin_version="$2" && shift 2 || shift ;;
     *) shift ;;
   esac
 done
@@ -45,7 +45,7 @@ detail()  { echo "       $1"; }
 section() { echo ""; echo " $1"; }
 
 has_brew=$(command -v brew >/dev/null 2>&1 && echo "yes" || echo "no")
-in_repo=$(git rev-parse --is-inside-work-tree 2>/dev/null && echo "yes" || echo "no")
+in_repo=$(git rev-parse --is-inside-work-tree >/dev/null 2>&1 && echo "yes" || echo "no")
 
 # =====================================================
 #  Check tools
@@ -73,11 +73,12 @@ legacy_cfg="skip"
 repo_cfg_gitignore="skip"
 
 if [ "$in_repo" = "yes" ]; then
+  repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
   legacy_cfg="missing"
-  [ -f compound-engineering.local.md ] && legacy_cfg="present"
+  [ -f "$repo_root/compound-engineering.local.md" ] && legacy_cfg="present"
 
-  if [ -e .compound-engineering/config.local.yaml ] || [ -d .compound-engineering ]; then
-    if git check-ignore -q .compound-engineering/config.local.yaml 2>/dev/null; then
+  if [ -e "$repo_root/.compound-engineering/config.local.yaml" ] || [ -d "$repo_root/.compound-engineering" ]; then
+    if git check-ignore -q "$repo_root/.compound-engineering/config.local.yaml" 2>/dev/null; then
       repo_cfg_gitignore="ok"
     else
       repo_cfg_gitignore="missing"
