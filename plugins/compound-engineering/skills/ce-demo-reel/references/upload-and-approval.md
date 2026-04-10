@@ -4,9 +4,21 @@ Get user approval for the local artifact, upload evidence to a public URL, and g
 
 ## Step 1: Local Approval Gate
 
-Before uploading anywhere public, present the local artifact path to the user for approval. Use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini).
+Before uploading anywhere public, open the artifact so the user can review it, then ask for approval.
 
-**Question:** "Evidence captured at [RUN_DIR]/[artifact]. Review it locally and decide:"
+**Open the file** using the platform file-opener before presenting the question:
+
+```bash
+open [RUN_DIR]/[artifact]
+```
+
+(`open` on macOS, `xdg-open` on Linux. Skip if running headless/in CI.)
+
+Then present the approval question via the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini).
+
+**Question:** "Evidence captured (`[artifact filename only]`). Review the file that just opened and decide:"
+
+Show only the artifact filename (e.g., `demo.gif`), not the full temp directory path.
 
 **Options:**
 1. **Looks good, upload for PR** -- proceed to upload
