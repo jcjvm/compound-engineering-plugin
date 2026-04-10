@@ -80,8 +80,10 @@ WEB_NODE_DEPS = {
 WEB_RUBY_DEPS = {"rails", "sinatra", "hanami", "roda"}
 WEB_GO_DEPS = {
     "github.com/gin-gonic/gin", "github.com/labstack/echo", "github.com/gofiber/fiber",
-    "github.com/go-chi/chi", "github.com/gorilla/mux", "net/http",
+    "github.com/go-chi/chi", "github.com/gorilla/mux",
 }
+# Note: net/http is stdlib and won't appear in go.mod. The agent detects stdlib web
+# servers from source imports in the diff and overrides the classification (Step 2).
 WEB_PYTHON_DEPS = {"flask", "django", "fastapi", "starlette", "tornado", "sanic", "litestar"}
 WEB_RUST_DEPS = {"actix-web", "axum", "rocket", "warp", "poem", "tide"}
 CLI_RUBY_DEPS = {"thor", "gli", "dry-cli"}
