@@ -152,17 +152,17 @@ Return these values to the caller (e.g., git-commit-push-pr):
 ```
 === Evidence Capture Complete ===
 Tier: [browser-reel / terminal-recording / screenshot-reel / static / skipped]
-URL: [public URL or "none"]
-Embed: [markdown image syntax including heading, or empty]
+Description: [1 sentence describing what the evidence shows]
+URL: [public URL or "none" (multiple URLs comma-separated for static screenshots)]
 === End Evidence ===
 ```
 
-The `Embed` field is the deliverable. It contains the full markdown section ready for inclusion in a PR description, including the `## Demo` or `## Screenshots` heading. The caller uses only this field.
+The `Description` is a 1-line summary derived from the capture hypothesis in Step 0 (e.g., "CLI detect command classifying 3 project types and recommending capture tiers"). The caller decides how to format the URL(s) into the PR description.
 
-- `Tier: skipped`, `URL: "none"`, or empty `Embed` all mean no evidence was captured.
+- `Tier: skipped` or `URL: "none"` means no evidence was captured.
 
-**Heading rules (strict):**
-- Browser reel, terminal recording, screenshot reel: `## Demo`
-- Static screenshots: `## Screenshots`
-- No evidence: no heading, empty Embed
+**Label convention:**
+- Browser reel, terminal recording, screenshot reel: label as "Demo"
+- Static screenshots: label as "Screenshots"
+- The caller applies the label when formatting. ce-demo-reel does not generate markdown.
 - Test output is never labeled "Demo" or "Screenshots"

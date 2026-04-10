@@ -29,27 +29,9 @@ The script uploads to catbox.moe, validates the response starts with `https://`,
 
 For multiple files (static screenshots tier), upload each file separately.
 
-## Step 3: Generate Markdown Embed
+## Step 3: Return Output
 
-Based on the evidence label and URL, generate the markdown for PR inclusion:
-
-**For GIF evidence (Demo label):**
-```markdown
-## Demo
-
-![Demo]([URL])
-```
-
-**For static screenshots (Screenshots label):**
-```markdown
-## Screenshots
-
-![Before]([URL-1])
-![After]([URL-2])
-```
-
-**For skipped evidence:**
-Return empty string. No section added to PR.
+Return the structured output defined in the SKILL.md Output section: `Tier`, `Description`, and `URL`. The caller formats the evidence into the PR description. ce-demo-reel does not generate markdown.
 
 ## Step 4: Cleanup
 

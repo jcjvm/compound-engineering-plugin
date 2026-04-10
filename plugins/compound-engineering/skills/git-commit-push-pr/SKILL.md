@@ -232,11 +232,11 @@ When evidence is possible, ask whether to include it in the PR description. Use 
 **Question:** "This PR has observable behavior. Capture evidence for the PR description?"
 
 **Options:**
-1. **Capture evidence now** -- load the `ce-demo-reel` skill with a target description as the argument (e.g., "the new settings page" or "CLI output of the migrate command"). Infer the target from the branch diff. ce-demo-reel returns structured output with an `Embed` field containing the markdown image syntax. Use only the `Embed` value in the PR body.
-2. **Use existing evidence** -- ask the user for the URL or markdown embed, then include it in the PR body.
-3. **Skip evidence** -- write the PR description without an evidence section.
+1. **Capture evidence now**: load the `ce-demo-reel` skill with a target description as the argument (e.g., "the new settings page" or "CLI output of the migrate command"). Infer the target from the branch diff. ce-demo-reel returns `Tier`, `Description`, and `URL`. Use the URL and description to build a `## Demo` or `## Screenshots` section (browser-reel/terminal-recording/screenshot-reel use "Demo", static uses "Screenshots").
+2. **Use existing evidence**: ask the user for the URL or markdown embed, then include it in the PR body.
+3. **Skip evidence**: write the PR description without an evidence section.
 
-If the user chooses capture, check ce-demo-reel's output for failure: `Tier: skipped`, `URL: "none"`, or an empty `Embed` field all mean no evidence was captured. Do not add a placeholder section. Summarize the skip reason in the final user report.
+If the user chooses capture, check ce-demo-reel's output for failure: `Tier: skipped` or `URL: "none"` means no evidence was captured. Do not add a placeholder section. Summarize the skip reason in the final user report.
 
 Place the evidence embed before the Compound Engineering badge, typically after the summary or within the changes section. Do not label test output as "Demo" or "Screenshots".
 
