@@ -119,7 +119,7 @@ for result in "${results[@]}"; do
     warn "$name"
     issues=$((issues + 1))
     case "$install_cmd" in
-      brew\ *)
+      *brew\ install*)
         if [ "$has_brew" = "yes" ]; then detail "$install_cmd"
         else detail "$url"; fi ;;
       *)

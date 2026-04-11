@@ -74,7 +74,7 @@ Otherwise proceed to Phase 2 to resolve any issues. Handle repo-local cleanup (S
 
 ### Step 4: Resolve Repo-Local CE Issues
 
-If `compound-engineering.local.md` exists, explain that it is obsolete because review-agent selection is automatic and CE now uses `.compound-engineering/config.local.yaml` for any surviving machine-local state. Ask whether to delete it now.
+Resolve the repository root (`git rev-parse --show-toplevel`). If `compound-engineering.local.md` exists at the repo root, explain that it is obsolete because review-agent selection is automatic and CE now uses `.compound-engineering/config.local.yaml` for any surviving machine-local state. Ask whether to delete it now. Use the repo-root path when deleting.
 
 ### Step 5: Bootstrap Project Config
 
