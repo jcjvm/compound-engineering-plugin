@@ -1,6 +1,6 @@
 # Persona Catalog
 
-18 reviewer personas organized into always-on, cross-cutting conditional, and stack-specific conditional layers, plus CE-specific agents. The orchestrator uses this catalog to select which reviewers to spawn for each review.
+20 reviewer personas organized into always-on, cross-cutting conditional, stack-specific conditional, and project-specific conditional layers, plus CE-specific agents. The orchestrator uses this catalog to select which reviewers to spawn for each review.
 
 ## Always-on (4 personas + 2 CE agents)
 
@@ -50,6 +50,15 @@ These reviewers keep their original opinionated lens. They are additive with the
 | `julik-frontend-races` | `compound-engineering:review:julik-frontend-races-reviewer` | Stimulus/Turbo controllers, DOM event wiring, timers, async UI flows, animations, or frontend state transitions with race potential |
 | `swift-ios` | `compound-engineering:review:swift-ios-reviewer` | Swift files, SwiftUI views, UIKit controllers, Xcode project files (.pbxproj), storyboards, XIBs, Info.plist, or iOS entitlements |
 
+## Project-Specific Conditional (2 personas, external plugin)
+
+These reviewers are project-bound — they fire on specific repository paths and live in an external plugin (`magnitude-reviewers`, private). Sessions without that plugin loaded simply skip these rows; the orchestrator treats the agent identifier as not-available and continues. No error, no broken behavior.
+
+| Persona | Agent | Select when diff touches... |
+|---------|-------|---------------------------|
+| `design-md-coherence-mobile` | `magnitude-reviewers:review:design-md-coherence-reviewer-mobile` | Magnitude mobile (Jug repo) design-system files: `Jug/Design System/`, `Jug/Assets.xcassets/Colors/`, `Jug/Icons.swift`, `Jug/Design System/Effects/Shadows.swift`, `Jug/Design System/Fonts/`, `Jug/SubnavSegmentedControl.swift`, `Jug/CustomTabBar.swift`, `Jug/Info.plist` (UIAppFonts), or `design.md` itself |
+| `design-md-coherence-web` | `magnitude-reviewers:review:design-md-coherence-reviewer-web` | Magnitude web design-system files: `lib/tokens.ts`, `styles/tokens.css`, `styles/components.css`, `app/globals.css`, `app/styleguide/**`, `DESIGN.md`, the `Design System` section of `CLAUDE.md`, or design wiki concept pages under `docs/wiki/concepts/` |
+
 ## CE Conditional Agents (migration-specific)
 
 These CE-native agents provide specialized analysis beyond what the persona agents cover. Spawn them when the diff includes database migrations, schema.rb, or data backfills.
@@ -64,5 +73,6 @@ These CE-native agents provide specialized analysis beyond what the persona agen
 1. **Always spawn all 4 always-on personas** plus the 2 CE always-on agents.
 2. **For each cross-cutting conditional persona**, the orchestrator reads the diff and decides whether the persona's domain is relevant. This is a judgment call, not a keyword match.
 3. **For each stack-specific conditional persona**, use file types and changed patterns as a starting point, then decide whether the diff actually introduces meaningful work for that reviewer. Do not spawn language-specific reviewers just because one config or generated file happens to match the extension.
-4. **For CE conditional agents**, spawn when the diff includes migration files (`db/migrate/*.rb`, `db/schema.rb`) or data backfill scripts.
-5. **Announce the team** before spawning with a one-line justification per conditional reviewer selected.
+4. **For each project-specific conditional persona (external plugin)**, use the path-match in the row above as the trigger. If the agent identifier is not available in the current session (the external plugin isn't loaded), skip the row silently. Do not error.
+5. **For CE conditional agents**, spawn when the diff includes migration files (`db/migrate/*.rb`, `db/schema.rb`) or data backfill scripts.
+6. **Announce the team** before spawning with a one-line justification per conditional reviewer selected.
