@@ -57,7 +57,7 @@ These reviewers are project-bound — they fire on specific repository paths and
 | Persona | Agent | Select when diff touches... |
 |---------|-------|---------------------------|
 | `design-md-coherence-mobile` | `magnitude-reviewers:review:design-md-coherence-reviewer-mobile` | Magnitude mobile (Jug repo) design-system files: `Jug/Design System/`, `Jug/Assets.xcassets/Colors/`, `Jug/Icons.swift`, `Jug/Design System/Effects/Shadows.swift`, `Jug/Design System/Fonts/`, `Jug/SubnavSegmentedControl.swift`, `Jug/CustomTabBar.swift`, `Jug/Info.plist` (UIAppFonts), or `design.md` itself |
-| `design-md-coherence-web` | `magnitude-reviewers:review:design-md-coherence-reviewer-web` | Magnitude web design-system files: `lib/tokens.ts`, `styles/tokens.css`, `styles/components.css`, `app/globals.css`, `app/styleguide/**`, `DESIGN.md`, the `Design System` section of `CLAUDE.md`, or design wiki concept pages under `docs/wiki/concepts/` |
+| `design-md-coherence-web` | `magnitude-reviewers:review:design-md-coherence-reviewer-web` | Magnitude web design-system files: `lib/tokens.ts`, `styles/tokens.css`, `styles/components.css`, `app/globals.css`, `app/styleguide/**`, `DESIGN.md`, the `Design System` section of `CLAUDE.md`, or design wiki concept pages under `docs/wiki/concepts/`. **Also fires when the diff touches admin form components under `components/admin/**/*.tsx` or admin routes under `app/admin/**/*.tsx`** — catches admin Save-button drift (single-`isSaving*` `disabled` with no `hasChanges` gate, missing Discard sibling, missing inline `animate-spin` SVG). Canonical pattern: `app/admin/website/hero/page.tsx:43, 222-247` |
 
 ## CE Conditional Agents (migration-specific)
 
