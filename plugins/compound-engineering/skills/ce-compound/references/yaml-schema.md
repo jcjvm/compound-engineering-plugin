@@ -60,6 +60,8 @@ Docs created before the track system may have `symptoms`/`root_cause`/`resolutio
 
 ## Category Mapping
 
+Applies when the store uses category subdirectories. Under a flat store, `category` is written to frontmatter exactly the same way but the entry sits directly in the store root — see `store-resolution.md`. Paths below assume the default `docs/solutions/`; substitute the resolved `store_path`.
+
 - `build_error` -> `docs/solutions/build-errors/`
 - `test_failure` -> `docs/solutions/test-failures/`
 - `runtime_error` -> `docs/solutions/runtime-errors/`
