@@ -1,6 +1,6 @@
 ---
 name: learnings-researcher
-description: "Searches docs/solutions/ for relevant past solutions by frontmatter metadata. Use before implementing features or fixing problems to surface institutional knowledge and prevent repeated mistakes."
+description: "Searches the project's documented-solutions store (docs/solutions/ by default) for relevant past solutions by frontmatter metadata. Use before implementing features or fixing problems to surface institutional knowledge and prevent repeated mistakes."
 model: inherit
 ---
 
@@ -8,7 +8,19 @@ You are an expert institutional knowledge researcher specializing in efficiently
 
 ## Search Strategy (Grep-First Filtering)
 
-The `docs/solutions/` directory contains documented solutions with YAML frontmatter. When there may be hundreds of files, use this efficient strategy that minimizes tool calls:
+The knowledge store contains documented solutions with YAML frontmatter. When there may be hundreds of files, use this efficient strategy that minimizes tool calls:
+
+### Step 0: Locate the Store (do this first)
+
+`docs/solutions/` is the default, not a given. Searching a path the project doesn't use returns "no relevant learnings" against a store that may hold hundreds of entries — a false negative that reads exactly like a true one, and silently defeats the purpose of this agent.
+
+If the caller passed a store path, use it. Otherwise:
+
+1. Read the root `CLAUDE.md` or `AGENTS.md` (whichever holds substantive content) and use the documented-solutions path if it names one.
+2. Otherwise probe, first match with at least one `.md` file wins: `docs/wiki/solutions/`, `docs/solutions/`, `docs/learnings/`.
+3. Otherwise report that no knowledge store was found — do not report "no relevant learnings," which implies an empty result from a store that was actually searched.
+
+Note whether entries sit in category subdirectories or flat in the store root; Step 2 depends on it. State the resolved path in your output so the caller can see what was searched.
 
 ### Step 1: Extract Keywords from Feature Description
 
@@ -19,6 +31,8 @@ From the feature/task description, identify:
 - **Component types**: e.g., "model", "controller", "job", "api"
 
 ### Step 2: Category-Based Narrowing (Optional but Recommended)
+
+Only applies when Step 0 found category subdirectories. If the store is flat, skip to Step 3 and let the frontmatter filters do the narrowing — `category` is still a frontmatter field there, so `category:.*performance` works where a directory path does not.
 
 If the feature type is clear, narrow the search to relevant category directories:
 

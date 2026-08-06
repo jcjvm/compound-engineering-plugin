@@ -87,7 +87,9 @@ For each candidate artifact, classify it into one of five outcomes:
 
 ## Scope Selection
 
-Start by discovering learnings and pattern docs under `docs/solutions/`.
+**Resolve the store first.** Read `references/store-resolution.md` and follow it to determine `store_path`, `layout`, `entry_extras`, and `post_write`. Every `docs/solutions/` below means the resolved `store_path` — that string is the default, not an assumption to act on. Two consequences specific to refreshing: a rewritten entry must keep its `entry_extras` intact (dropping an index-pointer comment orphans an entry that was previously discoverable), and `post_write` runs after the refresh edits land.
+
+Then discover learnings and pattern docs under the resolved store.
 
 Exclude:
 
@@ -98,7 +100,7 @@ Find all `.md` files under `docs/solutions/`, excluding `README.md` files and an
 
 If `$ARGUMENTS` is provided, use it to narrow scope before proceeding. Try these matching strategies in order, stopping at the first that produces results:
 
-1. **Directory match** — check if the argument matches a subdirectory name under `docs/solutions/` (e.g., `performance-issues`, `database-issues`)
+1. **Directory match** — check if the argument matches a subdirectory name under `docs/solutions/` (e.g., `performance-issues`, `database-issues`). Skip this strategy when `layout` is `flat` — try the `category:` frontmatter field instead
 2. **Frontmatter match** — search `module`, `component`, or `tags` fields in learning frontmatter for the argument
 3. **Filename match** — match against filenames (partial matches are fine)
 4. **Content search** — search file contents for the argument as a keyword (useful for feature names or feature areas)
@@ -507,6 +509,7 @@ When a replacement is needed, read the documentation contract files and pass the
 - `references/schema.yaml` — frontmatter fields and enum values
 - `references/yaml-schema.md` — category mapping
 - `assets/resolution-template.md` — section structure
+- the resolved `store_path`, `layout`, and `entry_extras` from Scope Selection — a subagent writing a replacement cannot re-derive them and will otherwise write to the default path in the default layout
 
 Do not let replacement subagents invent frontmatter fields, enum values, or section order from memory.
 

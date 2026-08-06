@@ -24,6 +24,7 @@ Captures problem solutions while context is fresh, creating structured documenta
 
 These files are the durable contract for the workflow. Read them on-demand at the step that needs them — do not bulk-load at skill start.
 
+- `references/store-resolution.md` — how to locate this project's knowledge store (read at Phase 0, before any search or write)
 - `references/schema.yaml` — canonical frontmatter fields and enum values (read when validating YAML)
 - `references/yaml-schema.md` — category mapping from problem_type to directory (read when classifying)
 - `assets/resolution-template.md` — section structure for new docs (read when assembling)
@@ -56,6 +57,16 @@ time and token usage.
 ```
 
 If the user says yes, dispatch the Session Historian in Phase 1. If no, skip it. Do not ask this in lightweight mode.
+
+---
+
+## Phase 0: Resolve the Knowledge Store
+
+**Runs first, in both modes.** Read `references/store-resolution.md` and follow it to determine `store_path`, `layout`, `entry_extras`, and `post_write` for this project.
+
+Everywhere this skill writes `docs/solutions/`, it means the resolved `store_path` — that string is the default, not an assumption to act on. The same applies to the category subdirectory: under `layout: flat`, `category` stays frontmatter and entries sit directly in `store_path`.
+
+Carry all four values into every Phase 1 subagent prompt. Subagents cannot re-derive them and will otherwise search and report against the default.
 
 ---
 
@@ -136,7 +147,7 @@ Launch research subagents. Each returns text data to the orchestrator.
    - **Examples**: Concrete before/after or usage examples showing the practice in action
 
 #### 3. **Related Docs Finder**
-   - Searches `docs/solutions/` for related documentation
+   - Searches the resolved `store_path` for related documentation (pass it in — the subagent cannot resolve it)
    - Identifies cross-references and links
    - Finds related GitHub issues
    - Flags any related learning or pattern docs that may now be stale, contradicted, or overly broad
@@ -149,7 +160,7 @@ Launch research subagents. Each returns text data to the orchestrator.
    **Search strategy (grep-first filtering for efficiency):**
 
    1. Extract keywords from the problem context: module names, technical terms, error messages, component types
-   2. If the problem category is clear, narrow search to the matching `docs/solutions/<category>/` directory
+   2. If the problem category is clear and `layout` is `category-subdirs`, narrow search to the matching `[store_path]/<category>/` directory. Under `layout: flat` there are no subdirectories to narrow to — search `[store_path]` and rely on the frontmatter filters below
    3. Use the native content-search tool (e.g., Grep in Claude Code) to pre-filter candidate files BEFORE reading any content. Run multiple searches in parallel, case-insensitive, targeting frontmatter fields. These are template patterns -- substitute actual keywords:
       - `title:.*<keyword>`
       - `tags:.*(<keyword1>|<keyword2>)`
@@ -217,8 +228,10 @@ The orchestrating agent (main conversation) performs these steps:
    - If findings are thin or "no relevant prior sessions," proceed without session context
 4. Assemble complete markdown file from the collected pieces, reading `assets/resolution-template.md` for the section structure of new docs
 5. Validate YAML frontmatter against `references/schema.yaml`
-6. Create directory if needed: `mkdir -p docs/solutions/[category]/`
-7. Write the file: either the updated existing doc or the new `docs/solutions/[category]/[filename].md`
+6. Add any `entry_extras` the Phase 0 resolution identified (for example, index-pointer comments the project's catalog is generated from)
+7. Create directory if needed: under `layout: category-subdirs`, `mkdir -p [store_path]/[category]/`; under `layout: flat`, `[store_path]` already exists
+8. Write the file: either the updated existing doc or the new entry at `[store_path]/[category]/[filename].md` (`[store_path]/[filename].md` when flat)
+9. Run `post_write` if Phase 0 resolved one, and report the command and its result. Until it runs, a project that generates its index has an entry nothing links to.
 
 When creating a new doc, preserve the section order from `assets/resolution-template.md` unless the user explicitly asks for a different structure.
 
@@ -274,7 +287,9 @@ Always capture the new learning first. Refresh is a targeted maintenance follow-
 
 ### Discoverability Check
 
-After the learning is written and the refresh decision is made, check whether the project's instruction files would lead an agent to discover and search `docs/solutions/` before starting work in a documented area. This runs every time — the knowledge store only compounds value when agents can find it.
+After the learning is written and the refresh decision is made, check whether the project's instruction files would lead an agent to discover and search the store before starting work in a documented area. This runs every time — the knowledge store only compounds value when agents can find it.
+
+Any path this check writes into an instruction file is the resolved `store_path`, never the literal `docs/solutions/`. The examples below use the default; substitute. When Phase 0 resolved the store *from* the instruction file, the check has already passed by construction — the file said where the store was — so confirm and move on rather than proposing an edit.
 
 1. Identify which root-level instruction files exist (AGENTS.md, CLAUDE.md, or both). Read the file(s) and determine which holds the substantive content — one file may just be a shim that `@`-includes the other (e.g., `CLAUDE.md` containing only `@AGENTS.md`, or vice versa). The substantive file is the assessment and edit target; ignore shims. If neither file exists, skip this check entirely.
 2. Assess whether an agent reading the instruction files would learn three things:
@@ -339,11 +354,13 @@ The orchestrator (main conversation) performs ALL of the following in one sequen
 
 1. **Extract from conversation**: Identify the problem and solution from conversation history. Also read MEMORY.md from the auto memory directory if it exists -- use any relevant notes as supplementary context alongside conversation history. Tag any memory-sourced content incorporated into the final doc with "(auto memory [claude])"
 2. **Classify**: Read `references/schema.yaml` and `references/yaml-schema.md`, then determine track (bug vs knowledge), category, and filename
-3. **Write minimal doc**: Create `docs/solutions/[category]/[filename].md` using the appropriate track template from `assets/resolution-template.md`, with:
+3. **Write minimal doc**: Create the entry at the Phase 0 `store_path` (`[store_path]/[category]/[filename].md`, or `[store_path]/[filename].md` when `layout` is `flat`) using the appropriate track template from `assets/resolution-template.md`, with:
    - YAML frontmatter with track-appropriate fields
+   - Any `entry_extras` the project requires
    - Bug track: Problem, root cause, solution with key code snippets, one prevention tip
    - Knowledge track: Context, guidance with key examples, one applicability note
-4. **Skip specialized agent reviews** (Phase 3) to conserve context
+4. **Run `post_write`** if Phase 0 resolved one — lightweight mode trims research, not the steps that make an entry discoverable
+5. **Skip specialized agent reviews** (Phase 3) to conserve context
 
 **Lightweight output:**
 ```
